@@ -1,0 +1,25 @@
+image: yidafu90/ci:latest
+
+
+
+stages:
+  - lint
+  - test
+  - build
+
+# start android config
+gradle_test:
+  stage: test
+  script:
+    - gradle test
+
+ktlint:
+  stage: lint
+  script:
+    - gradle ktlintCheck
+
+gradle_build:
+  stage: build
+  script:
+    - gradle build
+# finish android config
