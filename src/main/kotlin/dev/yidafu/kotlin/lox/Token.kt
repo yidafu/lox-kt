@@ -57,7 +57,7 @@ enum class TokenType(val value: String) {
     VAR("var"),
     WHILE("while"),
 
-    EDF("eof"),
+    EOF("eof"),
     ;
 
     companion object {

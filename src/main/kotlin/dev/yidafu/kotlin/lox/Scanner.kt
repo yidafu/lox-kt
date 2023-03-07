@@ -12,7 +12,7 @@ class Scanner(
             start = current
             scanToken()
         }
-        tokens.add(Token(TokenType.EDF, "", Any(), line))
+        tokens.add(Token(TokenType.EOF, "", Any(), line))
         return tokens
     }
 
