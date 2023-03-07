@@ -3,10 +3,9 @@ package dev.yidafu.kotlin.lox
 class Token(
     val type: TokenType,
     val lexeme: String,
-    val literal: Any,
+    val literal: Any = Any(),
     val line: Int = -1,
 ) {
-
     override fun toString(): String {
         return "$type $lexeme $literal"
     }
