@@ -13,14 +13,13 @@ class Parser(
         return equality()
     }
 
-
     fun equality(): Expression {
         var expr = comparison()
 
         while (match(TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL)) {
             val operator = previous()
             val rignt = comparison()
-            expr =  Binary(expr, operator, rignt)
+            expr = Binary(expr, operator, rignt)
         }
         return expr
     }
@@ -37,7 +36,7 @@ class Parser(
     }
 
     private fun term(): Expression {
-        var expr= factor()
+        var expr = factor()
 
         while (match(TokenType.MINUS, TokenType.PLUS)) {
             val operator = previous()
@@ -71,15 +70,15 @@ class Parser(
     private fun primary(): Expression {
         return when {
             match(TokenType.FALSE) -> Literal(false)
-                    match(TokenType.TRUE) -> Literal(true)
-                match(TokenType.NIL) -> Literal(Any())
-                match(TokenType.NUMBER, TokenType.STRING) -> Literal(previous().literal)
-                match(TokenType.LEFT_PAREN) -> {
-                    val expr = expreesion()
-                    cousume(TokenType.RIGHT_PAREN, "Expect ')' after expression")
-                    Grouping(expr)
-                }
-                else -> throw Exception("Expect Expression.")
+            match(TokenType.TRUE) -> Literal(true)
+            match(TokenType.NIL) -> Literal(Any())
+            match(TokenType.NUMBER, TokenType.STRING) -> Literal(previous().literal)
+            match(TokenType.LEFT_PAREN) -> {
+                val expr = expreesion()
+                cousume(TokenType.RIGHT_PAREN, "Expect ')' after expression")
+                Grouping(expr)
+            }
+            else -> throw Exception("Expect Expression.")
         }
     }
 
@@ -89,12 +88,12 @@ class Parser(
     }
 
     private fun match(vararg types: TokenType): Boolean {
-       for (type in types) {
-           if (check(type)) {
-               advance()
-               return true
-           }
-       }
+        for (type in types) {
+            if (check(type)) {
+                advance()
+                return true
+            }
+        }
         return false
     }
 
@@ -103,7 +102,7 @@ class Parser(
     }
 
     private fun advance(): Token {
-        if (!isAtEnd())  current++
+        if (!isAtEnd()) current++
 
         return previous()
     }
