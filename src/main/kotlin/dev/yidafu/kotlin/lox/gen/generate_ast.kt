@@ -18,7 +18,7 @@ val statTypes = mapOf<String, List<String>>(
     "Var" to listOf("name: Token", "init: Expression?"),
 )
 
-fun main(args: Array<String>) {
+fun main() {
 
     defineAst(OUT_PUT_DIR, "Expression", exprTypes)
 
@@ -26,7 +26,7 @@ fun main(args: Array<String>) {
 }
 
 fun defineAst(output: String, basename: String, types: Map<String, List<String>>) {
-    val path: String = "$OUT_PUT_DIR/${basename.lowercase()}.kt"
+    val path: String = "$output/${basename.lowercase()}.kt"
     val writer = PrintWriter(path, "UTF-8")
     writer.println("package dev.yidafu.kotlin.lox")
     writer.println("")
