@@ -44,7 +44,7 @@ operator fun AnyValue.compareTo(that: AnyValue): Int {
 // }
 
 class Interperter : Expression.Visitor<AnyValue>, Statement.Visitor<Void?> {
-    val environment = Environment()
+    var environment = Environment()
 
     fun interpert(stats: List<Statement>) {
         stats.forEach {
@@ -113,6 +113,24 @@ class Interperter : Expression.Visitor<AnyValue>, Statement.Visitor<Void?> {
 
     private fun evaluate(stat: Statement) {
         stat.accept(this)
+    }
+
+    override fun visitBlockStatement(statement: Block): Void? {
+        executeBlock(statement.statements, Environment(this.environment))
+        return null
+    }
+
+    private fun executeBlock(stats: List<Statement>, environment: Environment) {
+        val previous = this.environment
+        this.environment = environment
+        try {
+
+            stats.forEach {
+                evaluate(it)
+            }
+        } finally {
+            this.environment = previous
+        }
     }
 
     override fun visitExprStatement(statement: Expr): Void? {

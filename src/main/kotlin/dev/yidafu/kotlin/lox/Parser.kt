@@ -16,13 +16,14 @@ class Parser(
 
     private fun statement(): Statement {
         return when {
-            match(TokenType.VAR) -> parseDeclaration()
-            match(TokenType.PRINT) -> parseStatement()
+            match(TokenType.VAR) -> declaration()
+            match(TokenType.PRINT) -> printStatement()
+            match(TokenType.LEFT_BRACE) -> block()
             else -> expressionStatement()
         }
     }
 
-    private fun parseDeclaration(): Statement {
+    private fun declaration(): Statement {
         val name = consume(TokenType.IDENTIFIER, "Expect variable name")
         var init: Expression? = null
         if (match(TokenType.EQUAL)) {
@@ -31,10 +32,19 @@ class Parser(
         consume(TokenType.SEMICOLON, "Expect ';' after variable declaration")
         return Var(name, init)
     }
-    private fun parseStatement(): Print {
+    private fun printStatement(): Print {
         val expr = expreesion()
         consume(TokenType.SEMICOLON, "Expect ; after value")
         return Print(expr)
+    }
+
+    private fun block(): Statement {
+        val stats = mutableListOf<Statement>()
+        while (!check(TokenType.RIGHT_BRACE) && !isAtEnd()) {
+            stats.add(statement())
+        }
+        consume(TokenType.RIGHT_BRACE, "Expect '}' after block")
+        return Block(stats)
     }
 
     private fun expressionStatement(): Expr {

@@ -51,6 +51,10 @@ class AstPrinter : Expression.Visitor<String>, Statement.Visitor<String> {
         return builder.toString()
     }
 
+    override fun visitBlockStatement(statement: Block): String {
+        TODO("Not yet implemented")
+    }
+
     override fun visitExprStatement(statement: Expr): String {
         return "(expr ${statement.expr.accept(this)})"
     }

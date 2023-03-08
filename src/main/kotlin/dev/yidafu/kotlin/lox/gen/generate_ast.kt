@@ -13,6 +13,7 @@ val exprTypes = mapOf<String, List<String>>(
 )
 
 val statTypes = mapOf<String, List<String>>(
+    "Block" to listOf("statements: List<Statement>"),
     "Expr" to listOf("expr: Expression"),
     "Print" to listOf("expr: Expression"),
     "Var" to listOf("name: Token", "init: Expression?"),
