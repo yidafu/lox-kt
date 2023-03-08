@@ -38,11 +38,13 @@ fun run(source: String) {
     }
 }
 
-fun error(line: Int, msg: String) {
+fun error(line: Int, msg: String): Nothing {
     report(line, "", msg)
 }
 
-fun report(line: Int, where: String, msg: String) {
+fun report(line: Int, where: String, msg: String): Nothing {
+    println("$line $where $msg")
+    exitProcess(65)
 }
 fun main(args: Array<String>) {
     when (args.size) {

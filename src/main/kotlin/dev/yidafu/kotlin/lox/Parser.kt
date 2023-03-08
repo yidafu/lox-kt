@@ -5,15 +5,64 @@ class Parser(
     private var current: Int = 0,
 ) {
 
-    fun parse(): Expression {
-        return expreesion()
+    fun parse(): List<Statement> {
+        val stats = mutableListOf<Statement>()
+
+        while (!isAtEnd()) {
+            stats.add(statement())
+        }
+        return stats
     }
+
+    private fun statement(): Statement {
+        return when {
+            match(TokenType.VAR) -> parseDeclaration()
+            match(TokenType.PRINT) -> parseStatement()
+            else -> expressionStatement()
+        }
+    }
+
+    private fun parseDeclaration(): Statement {
+        val name = consume(TokenType.IDENTIFIER, "Expect variable name")
+        var init: Expression? = null
+        if (match(TokenType.EQUAL)) {
+            init = expreesion()
+        }
+        consume(TokenType.SEMICOLON, "Expect ';' after variable declaration")
+        return Var(name, init)
+
+    }
+    private fun parseStatement(): Print {
+        val expr = expreesion()
+        consume(TokenType.SEMICOLON, "Expect ; after value")
+        return Print(expr)
+    }
+
+    private fun expressionStatement(): Expr {
+        val expr = expreesion()
+        consume(TokenType.SEMICOLON, "expect ; after expression")
+        return Expr(expr)
+    }
+
 
     fun expreesion(): Expression {
-        return equality()
+        return assignment()
     }
 
-    fun equality(): Expression {
+    private fun assignment(): Expression {
+        val expr = equality()
+        if (match(TokenType.EQUAL)) {
+//            val equals = previous()
+            val value = assignment()
+            if (expr is Variable) {
+                return Assign(expr.name, value)
+            }
+            unreachable()
+        }
+        return expr
+    }
+
+    private fun equality(): Expression {
         var expr = comparison()
 
         while (match(TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL)) {
@@ -24,7 +73,7 @@ class Parser(
         return expr
     }
 
-    fun comparison(): Expression {
+    private fun comparison(): Expression {
         var expr = term()
 
         while (match(TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESS, TokenType.LESS_EQUAL)) {
@@ -75,14 +124,15 @@ class Parser(
             match(TokenType.NUMBER, TokenType.STRING) -> Literal(previous().literal)
             match(TokenType.LEFT_PAREN) -> {
                 val expr = expreesion()
-                cousume(TokenType.RIGHT_PAREN, "Expect ')' after expression")
+                consume(TokenType.RIGHT_PAREN, "Expect ')' after expression")
                 Grouping(expr)
             }
-            else -> throw Exception("Expect Expression.")
+            match(TokenType.IDENTIFIER) -> Variable(previous())
+            else -> unreachable()
         }
     }
 
-    private fun cousume(type: TokenType, msg: String): Token {
+    private fun consume(type: TokenType, msg: String): Token {
         if (check(type)) return advance()
         throw Exception(msg)
     }

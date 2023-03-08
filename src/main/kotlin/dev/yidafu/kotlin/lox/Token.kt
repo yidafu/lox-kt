@@ -9,6 +9,16 @@ class Token(
     override fun toString(): String {
         return "$type $lexeme $literal"
     }
+
+    companion object {
+        fun plus(): Token {
+            return Token(TokenType.PLUS, "+")
+        }
+
+        fun minus(): Token {
+            return Token(TokenType.MINUS, "-")
+        }
+    }
 }
 
 enum class TokenType(val value: String) {

@@ -1,50 +1,93 @@
 package dev.yidafu.kotlin.lox
 
-class Interperter : Visitor<Any> {
 
-    fun interpert(expr: Expression): Any {
-        return evaluate(expr)
+typealias AnyValue = Any
+fun checkNumberAndOperands(token: Token, left: AnyValue, right: AnyValue) {
+    if (left is Double && right is Double) return
+
+    throw LoxRuntimeException(token, "Operands must be numbers.")
+}
+
+operator fun AnyValue.plus(that: AnyValue): AnyValue {
+    return when {
+        this@plus is Double && that is Double -> {
+            this@plus + that
+        }
+
+        this@plus is String && that is String -> this@plus + that
+        else -> LoxRuntimeException(Token.plus(), "${this.javaClass} can't plus ${that.javaClass}")
+    }
+}
+
+operator fun AnyValue.minus(that: AnyValue): Double {
+    checkNumberAndOperands(Token.plus(), this, that)
+    return this as Double - that as Double
+}
+
+operator fun AnyValue.div(that: AnyValue): Double {
+    checkNumberAndOperands(Token.plus(), this, that)
+    return this as Double / that as Double
+}
+
+operator fun AnyValue.times(that: AnyValue): Double {
+    checkNumberAndOperands(Token.plus(), this, that)
+    return this as Double * that as Double
+}
+operator fun AnyValue.compareTo(that: AnyValue): Int {
+    checkNumberAndOperands(Token.plus(), this, that)
+    return (this as Double - that as Double).toInt()
+}
+
+// operator fun AnyValue.equals(that: AnyValue?): Boolean {
+//    if (that == null) return false
+//    checkNumberAndOperands(Token.plus(), this, that)
+//    return this == that
+// }
+
+class Interperter : Expression.Visitor<AnyValue>, Statement.Visitor<Void?> {
+    val environment = Environment()
+
+    fun interpert(stats: List<Statement>) {
+        stats.forEach {
+            evaluate(it)
+        }
     }
 
-    override fun visitBinaryExpression(expression: Binary): Any {
+    override fun visitAssignExpression(expression: Assign): AnyValue {
+        val value = evaluate(expression.value)
+        environment.assign(expression.name, value)
+        return value
+    }
+
+    override fun visitBinaryExpression(expression: Binary): AnyValue {
         val left = evaluate(expression.left)
         val right = evaluate(expression.right)
 
         return when (expression.operator.type) {
             // TODO: > < >= <= != ==
-            TokenType.MINUS -> {
-                return (left as Double) - (right as Double)
-            }
-            TokenType.PLUS ->
-                when {
-                    left is Double && right is Double -> {
-                        return left + right
-                    }
-                    left is String && right is String -> {
-                        return left + right
-                    }
-                    else -> throw Exception("unreachable")
-                }
-            TokenType.SLASH -> {
-                return (left as Double) / (right as Double)
-            }
-
-            TokenType.STAR -> {
-                return (left as Double) * (right as Double)
-            }
+            TokenType.GREATER -> left > right
+            TokenType.GREATER_EQUAL -> left >= right
+            TokenType.LESS -> left < right
+            TokenType.LESS_EQUAL -> left <= right
+            TokenType.EQUAL_EQUAL -> left == right
+            TokenType.BANG_EQUAL -> left != right
+            TokenType.MINUS -> left - right
+            TokenType.PLUS -> left + right
+            TokenType.SLASH -> left / right
+            TokenType.STAR -> left * right
             else -> throw Exception("unreachable")
         }
     }
 
-    override fun visitGroupingExpression(expression: Grouping): Any {
+    override fun visitGroupingExpression(expression: Grouping): AnyValue {
         return evaluate(expression.expr)
     }
 
-    override fun visitLiteralExpression(expression: Literal): Any {
+    override fun visitLiteralExpression(expression: Literal): AnyValue {
         return expression.value
     }
 
-    override fun visitUnaryExpression(expression: Unary): Any {
+    override fun visitUnaryExpression(expression: Unary): AnyValue {
         val right = evaluate(expression.right)
 
         return when (expression.operator.type) {
@@ -54,13 +97,39 @@ class Interperter : Visitor<Any> {
         }
     }
 
-    private fun isTruthy(value: Any): Boolean {
+    override fun visitVariableExpression(expression: Variable): AnyValue {
+        return environment[expression.name]
+    }
+
+    private fun isTruthy(value: AnyValue): Boolean {
         return when (value) {
             is Boolean -> value
             else -> false
         }
     }
-    private fun evaluate(expression: Expression): Any {
-        return expression.accept(this)
+
+    private fun evaluate(expr: Expression): AnyValue {
+        return expr.accept(this)
+    }
+
+    private fun evaluate(stat: Statement) {
+        stat.accept(this)
+    }
+
+    override fun visitExprStatement(statement: Expr): Void? {
+        evaluate(statement.expr)
+        return null
+    }
+
+    override fun visitPrintStatement(statement: Print): Void? {
+        println(evaluate(statement.expr))
+        return null
+    }
+
+    override fun visitVarStatement(statement: Var): Void? {
+        val value: AnyValue? = statement.init?.let { evaluate(statement.init) }
+
+        environment.define(statement.name.lexeme, value)
+        return null
     }
 }
