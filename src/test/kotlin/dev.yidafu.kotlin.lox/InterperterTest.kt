@@ -10,14 +10,12 @@ class InterperterTest {
         return Parser(tokens).parse()
     }
 
-
     @Test
     fun `should print true string to std out`() {
         val output1 = tapSystemOut {
             Interperter().interpert(parse("print true;"))
         }
         assertEquals("true", output1.trim())
-
     }
 
     @Test

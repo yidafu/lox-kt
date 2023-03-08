@@ -30,7 +30,6 @@ class Parser(
         }
         consume(TokenType.SEMICOLON, "Expect ';' after variable declaration")
         return Var(name, init)
-
     }
     private fun parseStatement(): Print {
         val expr = expreesion()
@@ -43,7 +42,6 @@ class Parser(
         consume(TokenType.SEMICOLON, "expect ; after expression")
         return Expr(expr)
     }
-
 
     fun expreesion(): Expression {
         return assignment()

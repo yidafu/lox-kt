@@ -1,7 +1,5 @@
 package dev.yidafu.kotlin.lox // ktlint-disable filename
 
-
-
 class AstPrinter : Expression.Visitor<String>, Statement.Visitor<String> {
     fun print(stats: List<Statement>): String {
         return stats.joinToString("\n") {
@@ -54,7 +52,7 @@ class AstPrinter : Expression.Visitor<String>, Statement.Visitor<String> {
     }
 
     override fun visitExprStatement(statement: Expr): String {
-       return "(expr ${statement.expr.accept(this)})"
+        return "(expr ${statement.expr.accept(this)})"
     }
 
     override fun visitPrintStatement(statement: Print): String {
@@ -63,6 +61,5 @@ class AstPrinter : Expression.Visitor<String>, Statement.Visitor<String> {
 
     override fun visitVarStatement(statement: Var): String {
         return "(var[${statement.name}] ${statement.init?.accept(this)})"
-
     }
 }

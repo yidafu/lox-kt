@@ -1,6 +1,5 @@
 package dev.yidafu.kotlin.lox
 
-
 typealias AnyValue = Any
 fun checkNumberAndOperands(token: Token, left: AnyValue, right: AnyValue) {
     if (left is Double && right is Double) return
