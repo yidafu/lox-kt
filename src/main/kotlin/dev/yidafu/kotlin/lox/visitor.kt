@@ -18,7 +18,6 @@ class AstPrinter : Expression.Visitor<String>, Statement.Visitor<String> {
         return "(${expression.name.lexeme} = ${expression.value.accept(this)})"
     }
 
-
     override fun visitBinaryExpression(expression: Binary): String {
         return parenthesize(expression.operator.lexeme, expression.left, expression.right)
     }

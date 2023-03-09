@@ -1,6 +1,5 @@
 package dev.yidafu.kotlin.lox
 
-
 abstract class Statement {
     abstract fun <R> accept(visitor: Visitor<R>): R
 
@@ -13,14 +12,13 @@ abstract class Statement {
         fun visitVarStatement(statement: Var): R
         fun visitWhileStatement(statement: While): R
     }
-
 }
 
 class Block(
     val statements: List<Statement>,
 ) : Statement() {
     override fun <R> accept(visitor: Visitor<R>): R {
-        return visitor.visitBlockStatement(this);
+        return visitor.visitBlockStatement(this)
     }
 }
 
@@ -28,7 +26,7 @@ class Expr(
     val expr: Expression,
 ) : Statement() {
     override fun <R> accept(visitor: Visitor<R>): R {
-        return visitor.visitExprStatement(this);
+        return visitor.visitExprStatement(this)
     }
 }
 
@@ -38,7 +36,7 @@ class If(
     val elseBranch: Statement?,
 ) : Statement() {
     override fun <R> accept(visitor: Visitor<R>): R {
-        return visitor.visitIfStatement(this);
+        return visitor.visitIfStatement(this)
     }
 }
 
@@ -46,7 +44,7 @@ class Print(
     val expr: Expression,
 ) : Statement() {
     override fun <R> accept(visitor: Visitor<R>): R {
-        return visitor.visitPrintStatement(this);
+        return visitor.visitPrintStatement(this)
     }
 }
 
@@ -56,7 +54,7 @@ class Func(
     val body: List<Statement>,
 ) : Statement() {
     override fun <R> accept(visitor: Visitor<R>): R {
-        return visitor.visitFuncStatement(this);
+        return visitor.visitFuncStatement(this)
     }
 }
 
@@ -65,7 +63,7 @@ class Var(
     val init: Expression?,
 ) : Statement() {
     override fun <R> accept(visitor: Visitor<R>): R {
-        return visitor.visitVarStatement(this);
+        return visitor.visitVarStatement(this)
     }
 }
 
@@ -74,7 +72,6 @@ class While(
     val body: Statement,
 ) : Statement() {
     override fun <R> accept(visitor: Visitor<R>): R {
-        return visitor.visitWhileStatement(this);
+        return visitor.visitWhileStatement(this)
     }
 }
-

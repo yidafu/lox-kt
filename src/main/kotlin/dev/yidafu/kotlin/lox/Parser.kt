@@ -78,7 +78,6 @@ class Parser(
         return If(condition, thanStat, elseStat)
     }
 
-
     private fun declaration(): Statement {
         val name = consume(TokenType.IDENTIFIER, "Expect variable name")
         var init: Expression? = null
