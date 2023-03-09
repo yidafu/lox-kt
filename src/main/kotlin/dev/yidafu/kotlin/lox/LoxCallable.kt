@@ -18,7 +18,12 @@ class LoxFunction(private val declaration: Func) : LoxCallable {
             val value = args[idx]
             env.define(name.lexeme, value)
         }
-        interperter.executeBlock(declaration.body, env)
+        try {
+            interperter.executeBlock(declaration.body, env)
+        } catch (rValue: ReturnInterruptException) {
+            return rValue.value
+        }
+
         return Nil()
     }
 

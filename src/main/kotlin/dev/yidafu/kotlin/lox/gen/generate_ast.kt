@@ -20,6 +20,7 @@ val statTypes = mapOf<String, List<String>>(
     "If" to listOf("condition: Expression", "thenBranch: Statement", "elseBranch: Statement?"),
     "Print" to listOf("expr: Expression"),
     "Func" to listOf("name: Token", "params: List<Token>", "body: List<Statement>"),
+    "Return" to listOf("keyword: Token", "value: Expression?"),
     "Var" to listOf("name: Token", "init: Expression?"),
     "While" to listOf("condition: Expression", "body: Statement"),
 )

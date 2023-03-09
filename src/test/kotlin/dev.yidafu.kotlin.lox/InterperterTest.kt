@@ -121,4 +121,23 @@ class InterperterTest {
 
         assertEquals("1.0\n2.0\n3.0", output)
     }
+
+    @Test
+    fun `fibonacci recursion implement`() {
+        val output = execute(
+            """
+        fun fib(n) {
+            if (n <= 1) return n;
+            return fib(n - 2) + fib(n - 1);
+        }
+        print fib(6);
+            """.trimIndent(),
+        )
+        fun fib(n: Double): Double {
+            if (n <= 1) return n
+            return fib(n - 2) + fib(n - 1)
+        }
+
+        assertEquals(fib(6.0).toString(), output)
+    }
 }

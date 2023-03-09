@@ -205,6 +205,11 @@ class Interperter : Expression.Visitor<AnyValue>, Statement.Visitor<Void?> {
         return null
     }
 
+    override fun visitReturnStatement(statement: Return): Void? {
+        val value = statement.value?.let { evaluate(it) } ?: Nil()
+        throw ReturnInterruptException(value)
+    }
+
     override fun visitVarStatement(statement: Var): Void? {
         val value: AnyValue? = statement.init?.let { evaluate(statement.init) }
 

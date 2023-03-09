@@ -84,6 +84,10 @@ class AstPrinter : Expression.Visitor<String>, Statement.Visitor<String> {
         TODO("Not yet implemented")
     }
 
+    override fun visitReturnStatement(statement: Return): String {
+        TODO("Not yet implemented")
+    }
+
     override fun visitVarStatement(statement: Var): String {
         return "(var [${statement.name.lexeme}] = ${statement.init?.accept(this)})"
     }

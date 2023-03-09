@@ -12,6 +12,8 @@ class LoxArgumentOverflowException : RuntimeException("function argument must le
 
 class LoxCallableException : RuntimeException("Only function can be called")
 
+class ReturnInterruptException(val value: AnyValue) : RuntimeException("")
+
 @Throws
 fun unreachable(): Nothing {
     throw ParseException("unreachable")

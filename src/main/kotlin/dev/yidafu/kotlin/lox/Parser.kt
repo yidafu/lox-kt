@@ -21,6 +21,7 @@ class Parser(
             match(TokenType.FUN) -> function()
             match(TokenType.VAR) -> declaration()
             match(TokenType.PRINT) -> printStatement()
+            match(TokenType.RETURN) -> returnStatement()
             match(TokenType.WHILE) -> whileStatement()
             match(TokenType.LEFT_BRACE) -> block()
             else -> expressionStatement()
@@ -91,6 +92,18 @@ class Parser(
         val expr = expreesion()
         consume(TokenType.SEMICOLON, "Expect ; after value")
         return Print(expr)
+    }
+
+    private fun returnStatement(): Return {
+        val keyword = previous()
+        val value = if (!check(TokenType.SEMICOLON)) {
+            expreesion()
+        } else {
+            null
+        }
+        consume(TokenType.SEMICOLON, "Expect ';' after return value")
+
+        return Return(keyword, value)
     }
 
     private fun whileStatement(): Statement {
