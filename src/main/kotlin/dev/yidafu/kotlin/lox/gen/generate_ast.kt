@@ -1,4 +1,4 @@
-package dev.yidafu.kotlin.lox.gen
+package dev.yidafu.kotlin.lox.gen // ktlint-disable filename
 
 import java.io.PrintWriter
 
@@ -6,6 +6,7 @@ val OUT_PUT_DIR = "/Users/dovyih/Codes/lox-kt/src/main/kotlin/dev/yidafu/kotlin/
 val exprTypes = mapOf<String, List<String>>(
     "Assign" to listOf("name: Token", "value: Expression"),
     "Binary" to listOf("left: Expression", "operator: Token", "right: Expression"),
+    "FunCall" to listOf("callee: Expression", "paren: Token", "args: List<Expression>"),
     "Grouping" to listOf("expr: Expression"),
     "Literal" to listOf("value: Any"),
     "Logical" to listOf("left: Expression", "operator: Token", "right: Expression"),
@@ -18,6 +19,7 @@ val statTypes = mapOf<String, List<String>>(
     "Expr" to listOf("expr: Expression"),
     "If" to listOf("condition: Expression", "thenBranch: Statement", "elseBranch: Statement?"),
     "Print" to listOf("expr: Expression"),
+    "Func" to listOf("name: Token", "params: List<Token>", "body: List<Statement>"),
     "Var" to listOf("name: Token", "init: Expression?"),
     "While" to listOf("condition: Expression", "body: Statement"),
 )

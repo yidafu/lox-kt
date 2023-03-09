@@ -18,8 +18,13 @@ class AstPrinter : Expression.Visitor<String>, Statement.Visitor<String> {
         return "(${expression.name.lexeme} = ${expression.value.accept(this)})"
     }
 
+
     override fun visitBinaryExpression(expression: Binary): String {
         return parenthesize(expression.operator.lexeme, expression.left, expression.right)
+    }
+
+    override fun visitFunCallExpression(expression: FunCall): String {
+        TODO("Not yet implemented")
     }
 
     override fun visitGroupingExpression(expression: Grouping): String {
@@ -74,6 +79,10 @@ class AstPrinter : Expression.Visitor<String>, Statement.Visitor<String> {
 
     override fun visitPrintStatement(statement: Print): String {
         return "(print ${statement.expr.accept(this)})"
+    }
+
+    override fun visitFuncStatement(statement: Func): String {
+        TODO("Not yet implemented")
     }
 
     override fun visitVarStatement(statement: Var): String {

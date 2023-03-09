@@ -18,6 +18,7 @@ class Parser(
         return when {
             match(TokenType.FOR) -> forStatement()
             match(TokenType.IF) -> ifStatement()
+            match(TokenType.FUN) -> function()
             match(TokenType.VAR) -> declaration()
             match(TokenType.PRINT) -> printStatement()
             match(TokenType.WHILE) -> whileStatement()
@@ -28,7 +29,7 @@ class Parser(
 
     private fun forStatement(): Statement {
         consume(TokenType.LEFT_PAREN, "Expect '(' after for")
-        var initalizer: Statement? = if (match(TokenType.SEMICOLON)) {
+        val initalizer: Statement? = if (match(TokenType.SEMICOLON)) {
             null
         } else if (match(TokenType.VAR)) {
             declaration()
@@ -77,6 +78,7 @@ class Parser(
         return If(condition, thanStat, elseStat)
     }
 
+
     private fun declaration(): Statement {
         val name = consume(TokenType.IDENTIFIER, "Expect variable name")
         var init: Expression? = null
@@ -100,7 +102,7 @@ class Parser(
         return While(condition, body)
     }
 
-    private fun block(): Statement {
+    private fun block(): Block {
         val stats = mutableListOf<Statement>()
         while (!check(TokenType.RIGHT_BRACE) && !isAtEnd()) {
             stats.add(statement())
@@ -113,6 +115,26 @@ class Parser(
         val expr = expreesion()
         consume(TokenType.SEMICOLON, "expect ; after expression")
         return Expr(expr)
+    }
+
+    private fun function(): Func {
+        val name = consume(TokenType.IDENTIFIER, "Expect function name")
+        consume(TokenType.LEFT_PAREN, "Expect '(' after function name")
+        val parameters = mutableListOf<Token>()
+        if (!check(TokenType.RIGHT_PAREN)) {
+            do {
+                if (parameters.size >= 255) {
+                    throw LoxArgumentOverflowException()
+                }
+                parameters.add(consume(TokenType.IDENTIFIER, "Expect parameter name"))
+            } while (match(TokenType.COMMA))
+        }
+        consume(TokenType.RIGHT_PAREN, "Expect ')' after parameters")
+
+        consume(TokenType.LEFT_BRACE, "Expect '{' before function body")
+
+        val body = block()
+        return Func(name, parameters, body.statements)
     }
 
     private fun expreesion(): Expression {
@@ -204,8 +226,33 @@ class Parser(
             val right = unary()
             return Unary(operator, right)
         }
+        return call()
+    }
 
-        return primary()
+    private fun call(): Expression {
+        var expr = primary()
+        while (true) {
+            if (match(TokenType.LEFT_PAREN)) {
+                expr = finishCall(expr)
+            } else {
+                break
+            }
+        }
+        return expr
+    }
+
+    private fun finishCall(callee: Expression): Expression {
+        val args = mutableListOf<Expression>()
+        if (!check(TokenType.RIGHT_PAREN)) {
+            do {
+                if (args.size >= 255) {
+                    throw LoxArgumentOverflowException()
+                }
+                args.add(expreesion())
+            } while (match(TokenType.COMMA))
+        }
+        val paren = consume(TokenType.RIGHT_PAREN, "Expect ')' after arguments")
+        return FunCall(callee, paren, args)
     }
 
     private fun primary(): Expression {

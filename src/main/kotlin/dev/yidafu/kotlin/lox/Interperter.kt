@@ -44,7 +44,27 @@ operator fun AnyValue.compareTo(that: AnyValue): Int {
 // }
 
 class Interperter : Expression.Visitor<AnyValue>, Statement.Visitor<Void?> {
-    var environment = Environment()
+    internal val global = Environment()
+
+    private lateinit var environment: Environment
+
+    init {
+        this.environment = this.global
+        this.global.define(
+            "clock",
+            object : LoxCallable {
+                override fun arity(): Int = 0
+
+                override fun call(interperter: Interperter, args: List<AnyValue>): AnyValue {
+                    return System.currentTimeMillis() / 1000.0
+                }
+
+                override fun toString(): String {
+                    return "<native fns>"
+                }
+            },
+        )
+    }
 
     fun interpert(stats: List<Statement>) {
         stats.forEach {
@@ -76,6 +96,20 @@ class Interperter : Expression.Visitor<AnyValue>, Statement.Visitor<Void?> {
             TokenType.STAR -> left * right
             else -> throw Exception("unreachable")
         }
+    }
+
+    override fun visitFunCallExpression(expression: FunCall): AnyValue {
+        val callee = evaluate(expression.callee)
+        val args = expression.args.map {
+            evaluate(it)
+        }
+
+        if (callee !is LoxCallable) {
+            throw LoxCallableException()
+        }
+
+        val function = callee as LoxCallable
+        return function.call(this, args)
     }
 
     override fun visitGroupingExpression(expression: Grouping): AnyValue {
@@ -132,11 +166,10 @@ class Interperter : Expression.Visitor<AnyValue>, Statement.Visitor<Void?> {
         return null
     }
 
-    private fun executeBlock(stats: List<Statement>, environment: Environment) {
+    internal fun executeBlock(stats: List<Statement>, environment: Environment) {
         val previous = this.environment
         this.environment = environment
         try {
-
             stats.forEach {
                 evaluate(it)
             }
@@ -163,6 +196,12 @@ class Interperter : Expression.Visitor<AnyValue>, Statement.Visitor<Void?> {
 
     override fun visitPrintStatement(statement: Print): Void? {
         println(evaluate(statement.expr))
+        return null
+    }
+
+    override fun visitFuncStatement(statement: Func): Void? {
+        val func = LoxFunction(statement)
+        environment.define(statement.name.lexeme, func)
         return null
     }
 

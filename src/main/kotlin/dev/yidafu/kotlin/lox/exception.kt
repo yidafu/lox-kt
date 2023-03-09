@@ -8,6 +8,10 @@ class LoxRuntimeException(var token: Token, msg: String = "") : RuntimeException
 
 class LoxUndefinedException(name: String) : RuntimeException("Nil variable '$name'")
 
+class LoxArgumentOverflowException : RuntimeException("function argument must less then 255")
+
+class LoxCallableException : RuntimeException("Only function can be called")
+
 @Throws
 fun unreachable(): Nothing {
     throw ParseException("unreachable")
