@@ -15,7 +15,7 @@ class AstPrinter : Expression.Visitor<String>, Statement.Visitor<String> {
     }
 
     override fun visitAssignExpression(expression: Assign): String {
-        TODO("Not yet implemented")
+        return "(${expression.name.lexeme} = ${expression.value.accept(this)})"
     }
 
     override fun visitBinaryExpression(expression: Binary): String {
@@ -30,12 +30,16 @@ class AstPrinter : Expression.Visitor<String>, Statement.Visitor<String> {
         return expression.value.toString()
     }
 
+    override fun visitLogicalExpression(expression: Logical): String {
+        return "(${expression.left.accept(this)} ${expression.operator.lexeme} ${expression.right.accept(this)})"
+    }
+
     override fun visitUnaryExpression(expression: Unary): String {
         return parenthesize(expression.operator.lexeme, expression.right)
     }
 
     override fun visitVariableExpression(expression: Variable): String {
-        TODO("Not yet implemented")
+        return "[${expression.name.lexeme}]"
     }
 
     private fun parenthesize(name: String, vararg exprs: Expression): String {
@@ -52,11 +56,20 @@ class AstPrinter : Expression.Visitor<String>, Statement.Visitor<String> {
     }
 
     override fun visitBlockStatement(statement: Block): String {
-        TODO("Not yet implemented")
+        return "{ ${statement.statements.joinToString("  ") { it.accept(this) }} }"
     }
 
     override fun visitExprStatement(statement: Expr): String {
         return "(expr ${statement.expr.accept(this)})"
+    }
+
+    override fun visitIfStatement(statement: If): String {
+        return """
+            |(if (${statement.condition.accept(this)})
+            |    then ${statement.thenBranch.accept(this)}
+            |    else ${statement.elseBranch?.accept(this)}
+            |)
+        """.trimMargin()
     }
 
     override fun visitPrintStatement(statement: Print): String {
@@ -64,6 +77,10 @@ class AstPrinter : Expression.Visitor<String>, Statement.Visitor<String> {
     }
 
     override fun visitVarStatement(statement: Var): String {
-        return "(var[${statement.name}] ${statement.init?.accept(this)})"
+        return "(var [${statement.name.lexeme}] = ${statement.init?.accept(this)})"
+    }
+
+    override fun visitWhileStatement(statement: While): String {
+        return "while (${statement.condition.accept(this)}) ${statement.body.accept(this)}"
     }
 }

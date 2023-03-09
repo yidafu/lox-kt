@@ -86,6 +86,16 @@ class Interperter : Expression.Visitor<AnyValue>, Statement.Visitor<Void?> {
         return expression.value
     }
 
+    override fun visitLogicalExpression(expression: Logical): AnyValue {
+        val leftResult = evaluate(expression.left)
+        if (expression.operator.type == TokenType.OR) {
+            if (isTruthy(leftResult)) return leftResult
+        } else if (!isTruthy(leftResult)) {
+            return leftResult
+        }
+        return evaluate(expression.right)
+    }
+
     override fun visitUnaryExpression(expression: Unary): AnyValue {
         val right = evaluate(expression.right)
 
@@ -103,6 +113,8 @@ class Interperter : Expression.Visitor<AnyValue>, Statement.Visitor<Void?> {
     private fun isTruthy(value: AnyValue): Boolean {
         return when (value) {
             is Boolean -> value
+            is String -> true
+            is Nil -> false
             else -> false
         }
     }
@@ -138,6 +150,17 @@ class Interperter : Expression.Visitor<AnyValue>, Statement.Visitor<Void?> {
         return null
     }
 
+    override fun visitIfStatement(statement: If): Void? {
+        if (isTruthy(evaluate(statement.condition))) {
+            evaluate(statement.thenBranch)
+        } else {
+            statement.elseBranch?.let {
+                evaluate(it)
+            }
+        }
+        return null
+    }
+
     override fun visitPrintStatement(statement: Print): Void? {
         println(evaluate(statement.expr))
         return null
@@ -147,6 +170,13 @@ class Interperter : Expression.Visitor<AnyValue>, Statement.Visitor<Void?> {
         val value: AnyValue? = statement.init?.let { evaluate(statement.init) }
 
         environment.define(statement.name.lexeme, value)
+        return null
+    }
+
+    override fun visitWhileStatement(statement: While): Void? {
+        while (isTruthy(evaluate(statement.condition))) {
+            evaluate(statement.body)
+        }
         return null
     }
 }

@@ -18,8 +18,9 @@ class Environment(
     fun assign(name: Token, value: AnyValue) {
         if (values.containsKey(name.lexeme)) {
             values[name.lexeme] = value
+        } else {
+            enclosing?.assign(name, value) ?: unreachable()
         }
-        enclosing?.assign(name, value) ?: unreachable()
     }
 
     operator fun get(name: Token): AnyValue {

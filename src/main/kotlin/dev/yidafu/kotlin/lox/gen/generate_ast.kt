@@ -8,6 +8,7 @@ val exprTypes = mapOf<String, List<String>>(
     "Binary" to listOf("left: Expression", "operator: Token", "right: Expression"),
     "Grouping" to listOf("expr: Expression"),
     "Literal" to listOf("value: Any"),
+    "Logical" to listOf("left: Expression", "operator: Token", "right: Expression"),
     "Unary" to listOf("operator: Token", "right: Expression"),
     "Variable" to listOf("name: Token"),
 )
@@ -15,8 +16,10 @@ val exprTypes = mapOf<String, List<String>>(
 val statTypes = mapOf<String, List<String>>(
     "Block" to listOf("statements: List<Statement>"),
     "Expr" to listOf("expr: Expression"),
+    "If" to listOf("condition: Expression", "thenBranch: Statement", "elseBranch: Statement?"),
     "Print" to listOf("expr: Expression"),
     "Var" to listOf("name: Token", "init: Expression?"),
+    "While" to listOf("condition: Expression", "body: Statement"),
 )
 
 fun main() {

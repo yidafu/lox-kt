@@ -6,8 +6,10 @@ abstract class Statement {
     interface Visitor<R> {
         fun visitBlockStatement(statement: Block): R
         fun visitExprStatement(statement: Expr): R
+        fun visitIfStatement(statement: If): R
         fun visitPrintStatement(statement: Print): R
         fun visitVarStatement(statement: Var): R
+        fun visitWhileStatement(statement: While): R
     }
 }
 
@@ -27,6 +29,16 @@ class Expr(
     }
 }
 
+class If(
+    val condition: Expression,
+    val thenBranch: Statement,
+    val elseBranch: Statement?,
+) : Statement() {
+    override fun <R> accept(visitor: Visitor<R>): R {
+        return visitor.visitIfStatement(this)
+    }
+}
+
 class Print(
     val expr: Expression,
 ) : Statement() {
@@ -41,5 +53,14 @@ class Var(
 ) : Statement() {
     override fun <R> accept(visitor: Visitor<R>): R {
         return visitor.visitVarStatement(this)
+    }
+}
+
+class While(
+    val condition: Expression,
+    val body: Statement,
+) : Statement() {
+    override fun <R> accept(visitor: Visitor<R>): R {
+        return visitor.visitWhileStatement(this)
     }
 }
