@@ -200,7 +200,7 @@ class Interperter : Expression.Visitor<AnyValue>, Statement.Visitor<Void?> {
     }
 
     override fun visitFuncStatement(statement: Func): Void? {
-        val func = LoxFunction(statement)
+        val func = LoxFunction(statement, environment)
         environment.define(statement.name.lexeme, func)
         return null
     }

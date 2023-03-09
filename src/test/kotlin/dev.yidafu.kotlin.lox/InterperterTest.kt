@@ -140,4 +140,25 @@ class InterperterTest {
 
         assertEquals(fib(6.0).toString(), output)
     }
+
+    @Test
+    fun `function closure`() {
+        val output = execute(
+            """
+        fun makeCounter() {
+            var i = 0;
+            fun count() {
+                i = i + 1;
+                print i;
+            }
+            return count;
+        }
+        var counter = makeCounter();
+        counter();
+        counter();
+            """.trimIndent(),
+        )
+
+        assertEquals("1.0\n2.0", output)
+    }
 }
