@@ -18,7 +18,8 @@ class Parser(
         return when {
             match(TokenType.FOR) -> forStatement()
             match(TokenType.IF) -> ifStatement()
-            match(TokenType.FUN) -> function()
+            match(TokenType.CLASS) -> classDeclare()
+            match(TokenType.FUN) -> function("function")
             match(TokenType.VAR) -> declaration()
             match(TokenType.PRINT) -> printStatement()
             match(TokenType.RETURN) -> returnStatement()
@@ -79,6 +80,19 @@ class Parser(
         return If(condition, thanStat, elseStat)
     }
 
+    private fun classDeclare(): Class {
+        val name = consume(TokenType.IDENTIFIER, "Expect class name")
+        consume(TokenType.LEFT_BRACE, "Expect '{' before class body")
+
+        val methods = mutableListOf<Func>()
+
+        while (!check(TokenType.RIGHT_BRACE) && !isAtEnd()) {
+            methods.add(function("methods"))
+        }
+        consume(TokenType.RIGHT_BRACE, "expect '}' after class body")
+        return Class(name, methods)
+    }
+
     private fun declaration(): Statement {
         val name = consume(TokenType.IDENTIFIER, "Expect variable name")
         var init: Expression? = null
@@ -129,9 +143,9 @@ class Parser(
         return Expr(expr)
     }
 
-    private fun function(): Func {
-        val name = consume(TokenType.IDENTIFIER, "Expect function name")
-        consume(TokenType.LEFT_PAREN, "Expect '(' after function name")
+    private fun function(kind: String): Func {
+        val name = consume(TokenType.IDENTIFIER, "Expect $kind name")
+        consume(TokenType.LEFT_PAREN, "Expect '(' after $kind name")
         val parameters = mutableListOf<Token>()
         if (!check(TokenType.RIGHT_PAREN)) {
             do {
@@ -160,6 +174,8 @@ class Parser(
             val value = assignment()
             if (expr is Variable) {
                 return Assign(expr.name, value)
+            } else if (expr is Get) {
+                return Set(expr.obj, expr.name, value)
             }
             unreachable()
         }
@@ -244,8 +260,11 @@ class Parser(
     private fun call(): Expression {
         var expr = primary()
         while (true) {
-            if (match(TokenType.LEFT_PAREN)) {
-                expr = finishCall(expr)
+            expr = if (match(TokenType.LEFT_PAREN)) {
+                finishCall(expr)
+            } else if (match(TokenType.DOT)) {
+                val name = consume(TokenType.IDENTIFIER, "Expect property name after '.'")
+                Get(expr, name)
             } else {
                 break
             }
@@ -278,6 +297,7 @@ class Parser(
                 consume(TokenType.RIGHT_PAREN, "Expect ')' after expression")
                 Grouping(expr)
             }
+            match(TokenType.THIS) -> This(previous())
             match(TokenType.IDENTIFIER) -> Variable(previous())
             else -> unreachable()
         }

@@ -9,7 +9,7 @@ interface LoxCallable {
 class LoxFunction(
     private val declaration: Func,
     private val closure: Environment,
-) : LoxCallable {
+) : LoxCallable, AnyValue() {
     override fun arity(): Int {
         TODO("Not yet implemented")
     }
@@ -28,6 +28,12 @@ class LoxFunction(
         }
 
         return Nil()
+    }
+
+    fun bind(instance: LoxInstance): LoxFunction {
+        val env = Environment(closure)
+        env.define("this", instance)
+        return LoxFunction(declaration, env)
     }
 
     override fun toString(): String {

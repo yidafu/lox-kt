@@ -7,15 +7,19 @@ val exprTypes = mapOf<String, List<String>>(
     "Assign" to listOf("name: Token", "value: Expression"),
     "Binary" to listOf("left: Expression", "operator: Token", "right: Expression"),
     "FunCall" to listOf("callee: Expression", "paren: Token", "args: List<Expression>"),
+    "Get" to listOf("obj: Expression", "name: Token"),
     "Grouping" to listOf("expr: Expression"),
     "Literal" to listOf("value: Any"),
     "Logical" to listOf("left: Expression", "operator: Token", "right: Expression"),
     "Unary" to listOf("operator: Token", "right: Expression"),
+    "Set" to listOf("obj: Expression", "name: Token", "value: Expression"),
+    "This" to listOf("keyword: Token"),
     "Variable" to listOf("name: Token"),
 )
 
 val statTypes = mapOf<String, List<String>>(
     "Block" to listOf("statements: List<Statement>"),
+    "Class" to listOf("name: Token", "methods: List<Func>"),
     "Expr" to listOf("expr: Expression"),
     "If" to listOf("condition: Expression", "thenBranch: Statement", "elseBranch: Statement?"),
     "Print" to listOf("expr: Expression"),
@@ -70,7 +74,7 @@ fun defineAst(output: String, basename: String, types: Map<String, List<String>>
             |    $fields
             |) : $basename() {
             |    override fun <R> accept(visitor: Visitor<R>): R {
-            |        return visitor.visit$className$basename(this);
+            |        return visitor.visit$className$basename(this)
             |    }
             |}
             |

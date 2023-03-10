@@ -119,6 +119,15 @@ class Interperter : Expression.Visitor<AnyValue>, Statement.Visitor<Void?> {
         return function.call(this, args)
     }
 
+    override fun visitGetExpression(expression: Get): AnyValue {
+        val obj = evaluate(expression.obj)
+        if (obj is LoxInstance) {
+            return obj.get(expression.name)
+        }
+
+        throw LoxNotObjectException()
+    }
+
     override fun visitGroupingExpression(expression: Grouping): AnyValue {
         return evaluate(expression.expr)
     }
@@ -147,6 +156,22 @@ class Interperter : Expression.Visitor<AnyValue>, Statement.Visitor<Void?> {
         }
     }
 
+    override fun visitSetExpression(expression: Set): AnyValue {
+        val obj = evaluate(expression.obj)
+        if (obj !is LoxInstance) {
+            throw LoxNotObjectException()
+        }
+
+        val value = evaluate(expression.value)
+        obj.set(expression.name, value)
+
+        return value
+    }
+
+    override fun visitThisExpression(expression: This): AnyValue {
+        return lookupVariable(expression.keyword, expression)
+    }
+
     override fun visitVariableExpression(expression: Variable): AnyValue {
         return lookupVariable(expression.name, expression)
     }
@@ -170,6 +195,18 @@ class Interperter : Expression.Visitor<AnyValue>, Statement.Visitor<Void?> {
 
     override fun visitBlockStatement(statement: Block): Void? {
         executeBlock(statement.statements, Environment(this.environment))
+        return null
+    }
+
+    override fun visitClassStatement(statement: Class): Void? {
+        environment.define(statement.name.lexeme, Nil())
+
+        val methods = statement.methods.associate {
+            val function = LoxFunction(it, environment)
+            it.name.lexeme to function
+        }
+        val klass = LoxClass(statement.name.lexeme, methods)
+        environment.assign(statement.name, klass)
         return null
     }
 

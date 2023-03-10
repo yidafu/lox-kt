@@ -26,6 +26,10 @@ class AstPrinter : Expression.Visitor<String>, Statement.Visitor<String> {
         TODO("Not yet implemented")
     }
 
+    override fun visitGetExpression(expression: Get): String {
+        TODO("Not yet implemented")
+    }
+
     override fun visitGroupingExpression(expression: Grouping): String {
         return parenthesize("group", expression.expr)
     }
@@ -40,6 +44,14 @@ class AstPrinter : Expression.Visitor<String>, Statement.Visitor<String> {
 
     override fun visitUnaryExpression(expression: Unary): String {
         return parenthesize(expression.operator.lexeme, expression.right)
+    }
+
+    override fun visitSetExpression(expression: Set): String {
+        TODO("Not yet implemented")
+    }
+
+    override fun visitThisExpression(expression: This): String {
+        TODO("Not yet implemented")
     }
 
     override fun visitVariableExpression(expression: Variable): String {
@@ -61,6 +73,10 @@ class AstPrinter : Expression.Visitor<String>, Statement.Visitor<String> {
 
     override fun visitBlockStatement(statement: Block): String {
         return "{ ${statement.statements.joinToString("  ") { it.accept(this) }} }"
+    }
+
+    override fun visitClassStatement(statement: Class): String {
+        TODO("Not yet implemented")
     }
 
     override fun visitExprStatement(statement: Expr): String {

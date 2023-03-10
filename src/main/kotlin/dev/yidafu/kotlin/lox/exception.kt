@@ -20,6 +20,11 @@ class LoxDeclareDuplicateException : RuntimeException("Already a variable with t
 
 class LoxTopReturnException : RuntimeException("Can't return from top-level.")
 
+class LoxNotObjectException : RuntimeException("Not object")
+
+class LoxObjectNotHavePropertiesException : RuntimeException("object not have property")
+class LoxTopLevelThisException : RuntimeException("can't use this from top-level")
+
 @Throws
 fun unreachable(): Nothing {
     throw ParseException("unreachable")

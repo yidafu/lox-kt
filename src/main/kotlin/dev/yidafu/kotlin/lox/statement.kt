@@ -5,6 +5,7 @@ abstract class Statement {
 
     interface Visitor<R> {
         fun visitBlockStatement(statement: Block): R
+        fun visitClassStatement(statement: Class): R
         fun visitExprStatement(statement: Expr): R
         fun visitIfStatement(statement: If): R
         fun visitPrintStatement(statement: Print): R
@@ -20,6 +21,15 @@ class Block(
 ) : Statement() {
     override fun <R> accept(visitor: Visitor<R>): R {
         return visitor.visitBlockStatement(this)
+    }
+}
+
+class Class(
+    val name: Token,
+    val methods: List<Func>,
+) : Statement() {
+    override fun <R> accept(visitor: Visitor<R>): R {
+        return visitor.visitClassStatement(this)
     }
 }
 

@@ -5,14 +5,19 @@ import java.util.Stack
 enum class FunctionType {
     NONE,
     FUNCTION,
+    METHOD,
 }
 
+enum class ClassType {
+    NONE,
+    CLASS,
+}
 class Resolver(
     private val interperter: Interperter,
     private val scopes: Stack<MutableMap<String, Boolean>> = Stack(),
 ) : Expression.Visitor<Void?>, Statement.Visitor<Void?> {
     private var currentFunction: FunctionType = FunctionType.NONE
-
+    private var currentClass: ClassType = ClassType.NONE
     override fun visitAssignExpression(expression: Assign): Void? {
         resolve(expression.value)
         resolveLocal(expression, expression.name)
@@ -32,6 +37,11 @@ class Resolver(
             resolve(arg)
         }
 
+        return null
+    }
+
+    override fun visitGetExpression(expression: Get): Void? {
+        resolve(expression.obj)
         return null
     }
 
@@ -55,6 +65,22 @@ class Resolver(
         return null
     }
 
+    override fun visitSetExpression(expression: Set): Void? {
+
+        resolve(expression.obj)
+        resolve(expression.value)
+        return null
+    }
+
+    override fun visitThisExpression(expression: This): Void? {
+        if (currentClass == ClassType.NONE) {
+            throw LoxTopLevelThisException()
+        }
+        resolveLocal(expression, expression.keyword)
+
+        return null
+    }
+
     override fun visitVariableExpression(expression: Variable): Void? {
         if (!scopes.isEmpty() && scopes.peek()[expression.name.lexeme] == false) {
             throw LoxVariableNotInitialException(expression.name.lexeme)
@@ -68,6 +94,24 @@ class Resolver(
         beginScope()
         resolve(statement.statements)
         endScope()
+        return null
+    }
+
+    override fun visitClassStatement(statement: Class): Void? {
+        val enclosingClass = currentClass
+        currentClass = ClassType.CLASS
+
+        declare(statement.name)
+        define(statement.name)
+        beginScope()
+
+        scopes.peek()["this"] = true
+        statement.methods.forEach {
+            resolveFunction(it, FunctionType.METHOD)
+        }
+
+        endScope()
+        currentClass = enclosingClass
         return null
     }
 

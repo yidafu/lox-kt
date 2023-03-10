@@ -191,4 +191,40 @@ class InterperterTest {
             assert(e is LoxTopReturnException)
         }
     }
+
+    @Test
+    fun `top level this`() {
+        try {
+            execute("print this;")
+            assert(false)
+        } catch (e: Exception) {
+            assert(e is LoxTopLevelThisException)
+        }
+    }
+
+    @Test
+    fun `class declare`() {
+        val output = execute(
+            """
+                class Bagel {
+                    foo() {
+                        print "method";
+                    }
+                    printThis() {
+                        print this.bar * 2;
+                    }
+                }
+                var bagel = Bagel();
+                print bagel;
+                bagel.bar = 234;
+                print bagel.bar;
+                bagel.foo();
+                var alias = bagel.foo;
+                alias();
+                bagel.printThis();
+            """.trimIndent(),
+        )
+
+        assertEquals("<object Bagel>\n234.0\nmethod\nmethod\n468.0", output)
+    }
 }
