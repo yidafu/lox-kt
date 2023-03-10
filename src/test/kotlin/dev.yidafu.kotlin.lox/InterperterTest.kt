@@ -8,7 +8,10 @@ class InterperterTest {
 
     private fun execute(srcCode: String): String {
         return tapSystemOut {
-            Interperter().interpert(Parser(Scanner((srcCode)).scanTokens()).parse())
+            val stats = Parser(Scanner((srcCode)).scanTokens()).parse()
+            val interperter = Interperter()
+            Resolver(interperter).resolve(stats)
+            interperter.interpert(stats)
         }.trim()
     }
 
@@ -160,5 +163,32 @@ class InterperterTest {
         )
 
         assertEquals("1.0\n2.0", output)
+    }
+
+    @Test
+    fun `declare duplicate variable should throw Exception`() {
+        try {
+            execute(
+                """
+                fun bad() {
+                    var a = "first";
+                    var a = "second";
+                }
+                """.trimIndent(),
+            )
+            assert(false)
+        } catch (e: Exception) {
+            assert(e is LoxDeclareDuplicateException)
+        }
+    }
+
+    @Test
+    fun `top level return statement`() {
+        try {
+            execute("return 123;")
+            assert(false)
+        } catch (e: Exception) {
+            assert(e is LoxTopReturnException)
+        }
     }
 }

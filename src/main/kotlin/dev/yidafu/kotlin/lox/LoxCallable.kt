@@ -23,7 +23,7 @@ class LoxFunction(
         }
         try {
             interperter.executeBlock(declaration.body, env)
-        } catch (rValue: ReturnInterruptException) {
+        } catch (rValue: LoxReturnInterruptException) {
             return rValue.value
         }
 

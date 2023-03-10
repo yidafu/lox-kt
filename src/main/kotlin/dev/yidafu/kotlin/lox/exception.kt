@@ -12,7 +12,13 @@ class LoxArgumentOverflowException : RuntimeException("function argument must le
 
 class LoxCallableException : RuntimeException("Only function can be called")
 
-class ReturnInterruptException(val value: AnyValue) : RuntimeException("")
+class LoxReturnInterruptException(val value: AnyValue) : RuntimeException("")
+
+class LoxVariableNotInitialException(name: String) : RuntimeException("variable not $name not initializer")
+
+class LoxDeclareDuplicateException : RuntimeException("Already a variable with this name in this scope")
+
+class LoxTopReturnException : RuntimeException("Can't return from top-level.")
 
 @Throws
 fun unreachable(): Nothing {

@@ -23,11 +23,27 @@ class Environment(
         }
     }
 
+    fun assignAt(distance: Int, name: Token, value: AnyValue) {
+        ancestor(distance)?.values?.set(name.lexeme, value)
+    }
+
     operator fun get(name: Token): AnyValue {
         if (values.containsKey(name.lexeme)) {
             return values[name.lexeme] ?: Nil()
         }
 
         return enclosing?.get(name) ?: throw LoxUndefinedException(name.lexeme)
+    }
+
+    internal fun getAt(distance: Int, name: String): AnyValue {
+        return ancestor(distance)?.values?.get(name) ?: throw LoxUndefinedException(name)
+    }
+
+    private fun ancestor(distance: Int): Environment? {
+        var env: Environment? = this
+        for (i in 0 until distance) {
+            env = env?.enclosing
+        }
+        return env
     }
 }

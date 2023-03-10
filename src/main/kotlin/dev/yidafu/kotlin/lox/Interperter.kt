@@ -48,6 +48,8 @@ class Interperter : Expression.Visitor<AnyValue>, Statement.Visitor<Void?> {
 
     private lateinit var environment: Environment
 
+    private val locals: MutableMap<Expression, Int> = mutableMapOf()
+
     init {
         this.environment = this.global
         this.global.define(
@@ -74,7 +76,12 @@ class Interperter : Expression.Visitor<AnyValue>, Statement.Visitor<Void?> {
 
     override fun visitAssignExpression(expression: Assign): AnyValue {
         val value = evaluate(expression.value)
-        environment.assign(expression.name, value)
+        val distance = locals[expression]
+
+        distance?.let {
+            environment.assignAt(distance, expression.name, value)
+        } ?: global.assign(expression.name, value)
+
         return value
     }
 
@@ -141,7 +148,7 @@ class Interperter : Expression.Visitor<AnyValue>, Statement.Visitor<Void?> {
     }
 
     override fun visitVariableExpression(expression: Variable): AnyValue {
-        return environment[expression.name]
+        return lookupVariable(expression.name, expression)
     }
 
     private fun isTruthy(value: AnyValue): Boolean {
@@ -207,7 +214,7 @@ class Interperter : Expression.Visitor<AnyValue>, Statement.Visitor<Void?> {
 
     override fun visitReturnStatement(statement: Return): Void? {
         val value = statement.value?.let { evaluate(it) } ?: Nil()
-        throw ReturnInterruptException(value)
+        throw LoxReturnInterruptException(value)
     }
 
     override fun visitVarStatement(statement: Var): Void? {
@@ -222,5 +229,16 @@ class Interperter : Expression.Visitor<AnyValue>, Statement.Visitor<Void?> {
             evaluate(statement.body)
         }
         return null
+    }
+
+    internal fun resolve(expr: Expression, depth: Int) {
+        locals[expr] = depth
+    }
+
+    private fun lookupVariable(name: Token, expr: Expression): AnyValue {
+        val distance = locals[expr]
+        return distance?.let {
+            environment.getAt(distance, name.lexeme)
+        } ?: global[name]
     }
 }
