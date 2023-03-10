@@ -7,7 +7,7 @@ class Nil : AnyValue() {
 }
 
 class Environment(
-    private var enclosing: Environment? = null,
+    internal var enclosing: Environment? = null,
 ) {
     private val values: MutableMap<String, AnyValue> = mutableMapOf()
 

@@ -168,6 +168,17 @@ class Interperter : Expression.Visitor<AnyValue>, Statement.Visitor<Void?> {
         return value
     }
 
+    override fun visitSuperExpression(expression: Super): AnyValue {
+        val distance = locals[expression]
+
+        return distance?.let {
+            val superClass = environment.getAt(it, "super") as LoxClass
+            val obj = environment.getAt(it - 1, "this") as LoxInstance
+            val method = superClass.findMethod(expression.method.lexeme)
+            method?.bind(obj) ?: throw LoxObjectNotHavePropertiesException()
+        } ?: Nil()
+    }
+
     override fun visitThisExpression(expression: This): AnyValue {
         return lookupVariable(expression.keyword, expression)
     }
@@ -199,13 +210,26 @@ class Interperter : Expression.Visitor<AnyValue>, Statement.Visitor<Void?> {
     }
 
     override fun visitClassStatement(statement: Class): Void? {
+        val superClass = statement.supperClass?.let {
+            val maybeSuperClass = evaluate(statement.supperClass)
+            if (maybeSuperClass !is LoxClass) throw LoxSupperClassException()
+            maybeSuperClass
+        }
+
         environment.define(statement.name.lexeme, Nil())
 
+        statement.supperClass?.let {
+            environment = Environment(environment)
+            environment.define("super", superClass)
+        }
         val methods = statement.methods.associate {
             val function = LoxFunction(it, environment, it.name.lexeme === "init")
             it.name.lexeme to function
         }
-        val klass = LoxClass(statement.name.lexeme, methods)
+        val klass = LoxClass(statement.name.lexeme, superClass, methods)
+
+        superClass?.let { environment = environment.enclosing!! }
+
         environment.assign(statement.name, klass)
         return null
     }

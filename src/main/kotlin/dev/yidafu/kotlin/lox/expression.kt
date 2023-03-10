@@ -13,6 +13,7 @@ abstract class Expression {
         fun visitLogicalExpression(expression: Logical): R
         fun visitUnaryExpression(expression: Unary): R
         fun visitSetExpression(expression: Set): R
+        fun visitSuperExpression(expression: Super): R
         fun visitThisExpression(expression: This): R
         fun visitVariableExpression(expression: Variable): R
     }
@@ -98,6 +99,15 @@ class Set(
 ) : Expression() {
     override fun <R> accept(visitor: Visitor<R>): R {
         return visitor.visitSetExpression(this)
+    }
+}
+
+class Super(
+    val keyword: Token,
+    val method: Token,
+) : Expression() {
+    override fun <R> accept(visitor: Visitor<R>): R {
+        return visitor.visitSuperExpression(this)
     }
 }
 

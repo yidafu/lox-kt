@@ -50,6 +50,10 @@ class AstPrinter : Expression.Visitor<String>, Statement.Visitor<String> {
         TODO("Not yet implemented")
     }
 
+    override fun visitSuperExpression(expression: Super): String {
+        TODO("Not yet implemented")
+    }
+
     override fun visitThisExpression(expression: This): String {
         TODO("Not yet implemented")
     }

@@ -12,6 +12,7 @@ enum class FunctionType {
 enum class ClassType {
     NONE,
     CLASS,
+    SUBCLASS,
 }
 class Resolver(
     private val interperter: Interperter,
@@ -73,6 +74,17 @@ class Resolver(
         return null
     }
 
+    override fun visitSuperExpression(expression: Super): Void? {
+        if (currentClass == ClassType.NONE) {
+            throw LoxTopLevelSuperException()
+        }
+        if (currentClass != ClassType.SUBCLASS) {
+            throw LoxSubClassSuerException()
+        }
+        resolveLocal(expression, expression.keyword)
+        return null
+    }
+
     override fun visitThisExpression(expression: This): Void? {
         if (currentClass == ClassType.NONE) {
             throw LoxTopLevelThisException()
@@ -104,6 +116,17 @@ class Resolver(
 
         declare(statement.name)
         define(statement.name)
+        if (statement.supperClass?.name?.lexeme == statement.name.lexeme) {
+            throw LoxInheritSelfException()
+        }
+        statement.supperClass?.let {
+            currentClass = ClassType.SUBCLASS
+            resolve(it)
+        }
+        statement.supperClass?.let {
+            beginScope()
+            scopes.peek()["super"] = true
+        }
         beginScope()
 
         scopes.peek()["this"] = true
@@ -112,6 +135,7 @@ class Resolver(
         }
 
         endScope()
+        statement.supperClass?.let { endScope() }
         currentClass = enclosingClass
         return null
     }

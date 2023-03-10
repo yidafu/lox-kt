@@ -26,6 +26,7 @@ class Block(
 
 class Class(
     val name: Token,
+    val supperClass: Variable?,
     val methods: List<Func>,
 ) : Statement() {
     override fun <R> accept(visitor: Visitor<R>): R {

@@ -13,13 +13,14 @@ val exprTypes = mapOf<String, List<String>>(
     "Logical" to listOf("left: Expression", "operator: Token", "right: Expression"),
     "Unary" to listOf("operator: Token", "right: Expression"),
     "Set" to listOf("obj: Expression", "name: Token", "value: Expression"),
+    "Super" to listOf("keyword: Token", "method: Token"),
     "This" to listOf("keyword: Token"),
     "Variable" to listOf("name: Token"),
 )
 
 val statTypes = mapOf<String, List<String>>(
     "Block" to listOf("statements: List<Statement>"),
-    "Class" to listOf("name: Token", "methods: List<Func>"),
+    "Class" to listOf("name: Token", "supperClass: Variable?", "methods: List<Func>"),
     "Expr" to listOf("expr: Expression"),
     "If" to listOf("condition: Expression", "thenBranch: Statement", "elseBranch: Statement?"),
     "Print" to listOf("expr: Expression"),

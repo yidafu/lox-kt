@@ -230,4 +230,46 @@ class InterperterTest {
 
         assertEquals("init\n<object Bagel>\n234.0\nmethod\nmethod\n468.0", output)
     }
+
+    @Test
+    fun `class inherit`() {
+        val output = execute(
+            """
+            class Parent {
+                foo() {
+                    print "super";
+                }
+            }
+            
+            class Child < Parent {
+                foo() {
+                  super.foo();
+                    print "this";
+                }
+            }
+            
+            Child().foo();
+            """.trimIndent(),
+        )
+
+        assertEquals("super\nthis", output)
+    }
+
+    @Test
+    fun `class not inherit using super should throw exception`() {
+        try {
+            execute(
+                """
+                class F {
+                    foo() {
+                        print super.xxx();
+                    }
+                }
+                """.trimIndent(),
+            )
+            assert(false)
+        } catch (e: Exception) {
+            assert(e is LoxSubClassSuerException)
+        }
+    }
 }
