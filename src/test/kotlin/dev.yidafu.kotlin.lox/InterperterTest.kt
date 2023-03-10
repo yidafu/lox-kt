@@ -207,6 +207,9 @@ class InterperterTest {
         val output = execute(
             """
                 class Bagel {
+                    init() {
+                        print "init";
+                    }
                     foo() {
                         print "method";
                     }
@@ -225,6 +228,6 @@ class InterperterTest {
             """.trimIndent(),
         )
 
-        assertEquals("<object Bagel>\n234.0\nmethod\nmethod\n468.0", output)
+        assertEquals("init\n<object Bagel>\n234.0\nmethod\nmethod\n468.0", output)
     }
 }

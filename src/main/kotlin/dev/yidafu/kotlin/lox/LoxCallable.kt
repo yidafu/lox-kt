@@ -9,7 +9,9 @@ interface LoxCallable {
 class LoxFunction(
     private val declaration: Func,
     private val closure: Environment,
+    internal val isInitializer: Boolean,
 ) : LoxCallable, AnyValue() {
+
     override fun arity(): Int {
         TODO("Not yet implemented")
     }
@@ -24,16 +26,18 @@ class LoxFunction(
         try {
             interperter.executeBlock(declaration.body, env)
         } catch (rValue: LoxReturnInterruptException) {
+            if (isInitializer) {
+                return closure.getAt(0, "this")
+            }
             return rValue.value
         }
-
-        return Nil()
+        return if (isInitializer) closure.getAt(0, "this") else Nil()
     }
 
     fun bind(instance: LoxInstance): LoxFunction {
         val env = Environment(closure)
         env.define("this", instance)
-        return LoxFunction(declaration, env)
+        return LoxFunction(declaration, env, isInitializer)
     }
 
     override fun toString(): String {

@@ -202,7 +202,7 @@ class Interperter : Expression.Visitor<AnyValue>, Statement.Visitor<Void?> {
         environment.define(statement.name.lexeme, Nil())
 
         val methods = statement.methods.associate {
-            val function = LoxFunction(it, environment)
+            val function = LoxFunction(it, environment, it.name.lexeme === "init")
             it.name.lexeme to function
         }
         val klass = LoxClass(statement.name.lexeme, methods)
@@ -244,7 +244,7 @@ class Interperter : Expression.Visitor<AnyValue>, Statement.Visitor<Void?> {
     }
 
     override fun visitFuncStatement(statement: Func): Void? {
-        val func = LoxFunction(statement, environment)
+        val func = LoxFunction(statement, environment, false)
         environment.define(statement.name.lexeme, func)
         return null
     }

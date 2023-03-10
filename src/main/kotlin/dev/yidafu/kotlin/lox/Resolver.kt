@@ -5,6 +5,7 @@ import java.util.Stack
 enum class FunctionType {
     NONE,
     FUNCTION,
+    INITIALIZER,
     METHOD,
 }
 
@@ -107,7 +108,7 @@ class Resolver(
 
         scopes.peek()["this"] = true
         statement.methods.forEach {
-            resolveFunction(it, FunctionType.METHOD)
+            resolveFunction(it, if (it.name.lexeme === "init") FunctionType.INITIALIZER else FunctionType.METHOD)
         }
 
         endScope()

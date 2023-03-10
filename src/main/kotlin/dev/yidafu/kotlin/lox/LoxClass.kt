@@ -25,11 +25,14 @@ class LoxClass(
     internal val methods: Map<String, LoxFunction>,
 ) : LoxCallable {
     override fun arity(): Int {
-        TODO("Not yet implemented")
+        return methods["init"]?.arity() ?: 0
     }
 
     override fun call(interperter: Interperter, args: List<AnyValue>): AnyValue {
-        return LoxInstance(this)
+        val instance = LoxInstance(this)
+        methods["init"]?.bind(instance)?.call(interperter, args)
+
+        return instance
     }
 
     override fun toString(): String {
