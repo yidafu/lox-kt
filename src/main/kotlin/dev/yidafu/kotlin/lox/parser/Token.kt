@@ -1,14 +1,23 @@
-package dev.yidafu.kotlin.lox
+package dev.yidafu.kotlin.lox.parser
 
 class Token(
     val type: TokenType,
     val lexeme: String,
-    val literal: Any,
+    val literal: Any = Any(),
     val line: Int = -1,
 ) {
-
     override fun toString(): String {
         return "$type $lexeme $literal"
+    }
+
+    companion object {
+        fun plus(): Token {
+            return Token(TokenType.PLUS, "+")
+        }
+
+        fun minus(): Token {
+            return Token(TokenType.MINUS, "-")
+        }
     }
 }
 
@@ -58,7 +67,7 @@ enum class TokenType(val value: String) {
     VAR("var"),
     WHILE("while"),
 
-    EDF("eof"),
+    EOF("eof"),
     ;
 
     companion object {

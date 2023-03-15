@@ -1,4 +1,4 @@
-package dev.yidafu.kotlin.lox
+package dev.yidafu.kotlin.lox.parser
 
 class Scanner(
     private val source: String,
@@ -12,7 +12,7 @@ class Scanner(
             start = current
             scanToken()
         }
-        tokens.add(Token(TokenType.EDF, "", Any(), line))
+        tokens.add(Token(TokenType.EOF, "", Any(), line))
         return tokens
     }
 
@@ -40,7 +40,7 @@ class Scanner(
                 ' ', '\r', '\t' -> {}
                 '\n' -> line++
                 '"' -> string()
-                else -> error(line, "Unexpected character -> $char")
+                else -> dev.yidafu.kotlin.lox.error(line, "Unexpected character -> $char")
             }
         }
     }
@@ -51,7 +51,7 @@ class Scanner(
             advance()
         }
         if (isAtEnd()) {
-            error(line, "Unterminated String.")
+            dev.yidafu.kotlin.lox.error(line, "Unterminated String.")
             return
         }
         advance() // the closing "
@@ -71,7 +71,7 @@ class Scanner(
     }
 
     private fun identifier() {
-        while (isAlphaNumberic(peek())) advance()
+        while (isAlphaNumeric(peek())) advance()
         val text = source.substring(start, current)
         val type = TokenType.toType(text) ?: TokenType.IDENTIFIER
         addToken(type)
@@ -84,7 +84,7 @@ class Scanner(
         return c in 'a'..'z' || c in 'A'..'Z' || c == '_'
     }
 
-    private fun isAlphaNumberic(c: Char): Boolean {
+    private fun isAlphaNumeric(c: Char): Boolean {
         return isAlpha(c) || isDigit(c)
     }
 

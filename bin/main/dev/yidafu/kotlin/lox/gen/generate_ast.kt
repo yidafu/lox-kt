@@ -2,7 +2,7 @@ package dev.yidafu.kotlin.lox.gen // ktlint-disable filename
 
 import java.io.PrintWriter
 
-const val OUT_PUT_DIR = "/Users/dovyih/Codes/lox-kt/src/main/kotlin/dev/yidafu/kotlin/lox/common"
+val OUT_PUT_DIR = "/Users/dovyih/Codes/lox-kt/src/main/kotlin/dev/yidafu/kotlin/lox"
 val exprTypes = mapOf<String, List<String>>(
     "Assign" to listOf("name: Token", "value: Expression"),
     "Binary" to listOf("left: Expression", "operator: Token", "right: Expression"),
