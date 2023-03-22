@@ -73,7 +73,7 @@ class Interperter : Expression.Visitor<AnyValue>, dev.yidafu.kotlin.lox.common.S
         )
     }
 
-    fun interpert(stats: List<dev.yidafu.kotlin.lox.common.Statement>) {
+    fun interpert(stats: List<Statement>) {
         stats.forEach {
             evaluate(it)
         }

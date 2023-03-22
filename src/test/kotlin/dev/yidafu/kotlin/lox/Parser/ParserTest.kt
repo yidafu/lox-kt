@@ -1,4 +1,4 @@
-package dev.yidafu.kotlin.lox
+package dev.yidafu.kotlin.lox.Parser
 
 import dev.yidafu.kotlin.lox.common.AstPrinter
 import dev.yidafu.kotlin.lox.common.Statement

@@ -1,4 +1,4 @@
-package dev.yidafu.kotlin.lox
+package dev.yidafu.kotlin.lox.Parser
 
 import dev.yidafu.kotlin.lox.parser.Scanner
 import dev.yidafu.kotlin.lox.parser.TokenType

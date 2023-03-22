@@ -1,6 +1,12 @@
-package dev.yidafu.kotlin.lox
+package dev.yidafu.kotlin.lox.interperter
 
 import com.github.stefanbirkner.systemlambda.SystemLambda.tapSystemOut
+import dev.yidafu.kotlin.lox.common.LoxDeclareDuplicateException
+import dev.yidafu.kotlin.lox.common.LoxSubClassSuerException
+import dev.yidafu.kotlin.lox.common.LoxTopLevelThisException
+import dev.yidafu.kotlin.lox.common.LoxTopReturnException
+import dev.yidafu.kotlin.lox.parser.Parser
+import dev.yidafu.kotlin.lox.parser.Scanner
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

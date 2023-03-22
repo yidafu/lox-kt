@@ -1,5 +1,9 @@
-package dev.yidafu.kotlin.lox
+package dev.yidafu.kotlin.lox.Parser
 
+import dev.yidafu.kotlin.lox.common.AstPrinter
+import dev.yidafu.kotlin.lox.common.Statement
+import dev.yidafu.kotlin.lox.parser.Parser
+import dev.yidafu.kotlin.lox.parser.Scanner
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

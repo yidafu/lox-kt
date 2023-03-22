@@ -4,7 +4,7 @@ import java.util.Stack
 
 class VM(
     val chunk: Chunk,
-    val stack: Stack<Value> = Stack(),
+    val stack: Stack<LoxValue<Any>> = Stack(),
 ) {
 
     fun exec() {
@@ -26,11 +26,16 @@ class VM(
         }
     }
 
-    fun push(value: Value) {
+    fun reset() {
+        chunk.ip = 0
+        stack.clear()
+    }
+
+    fun push(value: LoxValue<Any>) {
         stack.push(value)
     }
 
-    fun pop(): Value {
+    fun pop(): LoxValue<Any> {
         return stack.pop()
     }
 
