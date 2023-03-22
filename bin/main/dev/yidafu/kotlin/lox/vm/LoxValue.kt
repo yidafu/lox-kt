@@ -1,5 +1,7 @@
 package dev.yidafu.kotlin.lox.vm
 
+import dev.yidafu.kotlin.lox.interperter.compareTo
+
 sealed class LoxValue<out T>(val value: T) {
     class LoxString(value: String) : LoxValue<String>(value) {
         operator fun plus(that: LoxString): LoxString {
@@ -25,15 +27,45 @@ sealed class LoxValue<out T>(val value: T) {
         }
 
         override fun toString(): String {
-            return "[LoxNumber] ${this.value}"
+            return "[LoxNumber] $value"
         }
     }
 
-    class LoxNil(value: Any? = null) : LoxValue<Any?>(value)
+    class LoxNil(value: Any = Any()) : LoxValue<Any>(value) {
+        override fun toString(): String {
+            return "[LoxNil]"
+        }
+    }
 
-    class LoxBool(value: Boolean) : LoxValue<Boolean>(value)
+    class LoxBool(value: Boolean) : LoxValue<Boolean>(value) {
+        override fun toString(): String {
+            return "[LoxBool] $value"
+        }
+    }
 
     override fun toString(): String {
         return "[LoxValue] ${this.value}"
+    }
+
+    fun isFalsely() = when (this) {
+        is LoxNil -> LoxBool(false)
+        is LoxBool -> LoxBool(!this.value)
+        is LoxNumber -> LoxBool(this.value == 0.0)
+        is LoxString -> LoxBool(this.value.isNotEmpty())
+    }
+
+    override fun equals(other: Any?): Boolean = when {
+        this is LoxNil && other is LoxNil -> true
+        this is LoxBool && other is LoxBool -> this.value == other.value
+        this is LoxNumber && other is LoxNumber -> this.value == other.value
+        this is LoxString && other is LoxString -> this.value == other.value
+        else -> false
+    }
+    operator fun compareTo(other: LoxValue<Any>): Int = when {
+        this is LoxNil && other is LoxNil -> 0
+        this is LoxBool && other is LoxBool -> this.value.compareTo(other.value)
+        this is LoxNumber && other is LoxNumber -> this.value.compareTo(other.value)
+        this is LoxString && other is LoxString -> this.value.compareTo(this.value)
+        else -> -1
     }
 }

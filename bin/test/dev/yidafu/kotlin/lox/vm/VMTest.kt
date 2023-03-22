@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 class VMTest {
 
     @Test
-    fun vmTest() {
+    fun binaryPlusTest() {
         val vm = VM(Chunk())
         vm.chunk.addConstant(LoxValue.LoxNumber(2.3), 1)
         vm.chunk.addConstant(LoxValue.LoxNumber(3.4), 1)

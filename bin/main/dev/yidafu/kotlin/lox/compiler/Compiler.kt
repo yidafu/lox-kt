@@ -4,6 +4,7 @@ import dev.yidafu.kotlin.lox.common.*
 import dev.yidafu.kotlin.lox.common.Class
 import dev.yidafu.kotlin.lox.common.Grouping
 import dev.yidafu.kotlin.lox.common.Set
+import dev.yidafu.kotlin.lox.parser.TokenType
 import dev.yidafu.kotlin.lox.vm.Chunk
 import dev.yidafu.kotlin.lox.vm.LoxValue
 import dev.yidafu.kotlin.lox.vm.OpCode
@@ -23,14 +24,20 @@ class Compiler(val chunk: Chunk) : Expression.Visitor<Unit>, Statement.Visitor<U
         compile(expression.left)
         compile(expression.right)
         val line = expression.operator.line
-        val opCode = when (val operator = expression.operator.lexeme) {
-            "+" -> OpCode.OpAdd
-            "-" -> OpCode.OpSubtract
-            "*" -> OpCode.OpMultiply
-            "/" -> OpCode.OpDivide
+        val opCodes = when (val operator = expression.operator.type) {
+            TokenType.PLUS -> arrayOf(OpCode.OpAdd)
+            TokenType.MINUS -> arrayOf(OpCode.OpSubtract)
+            TokenType.STAR -> arrayOf(OpCode.OpMultiply)
+            TokenType.SLASH -> arrayOf(OpCode.OpDivide)
+            TokenType.BANG_EQUAL -> arrayOf(OpCode.OpEqual, OpCode.OpNot)
+            TokenType.EQUAL_EQUAL -> arrayOf(OpCode.OpEqual)
+            TokenType.GREATER -> arrayOf(OpCode.OpGreater)
+            TokenType.GREATER_EQUAL -> arrayOf(OpCode.OpLess, OpCode.OpNot)
+            TokenType.LESS -> arrayOf(OpCode.OpLess)
+            TokenType.LESS_EQUAL -> arrayOf(OpCode.OpGreater, OpCode.OpNot)
             else -> unreachable()
-        }
-        chunk.write(opCode.toByte(), line)
+        }.map { it.toByte() }
+        chunk.write(opCodes, line)
     }
 
     override fun visitFunCallExpression(expression: FunCall) {

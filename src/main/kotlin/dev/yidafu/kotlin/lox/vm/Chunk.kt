@@ -14,8 +14,8 @@ class Chunk(
         lines.add(line)
     }
 
-    fun write(vararg bytes: Byte, line: Int) {
-        codes.addAll(bytes.toList())
+    fun write(bytes: List<Byte>, line: Int) {
+        codes.addAll(bytes)
     }
 
     fun addConstant(value: LoxValue<Any>, line: Int) {

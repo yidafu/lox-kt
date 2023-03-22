@@ -2,8 +2,6 @@ package dev.yidafu.kotlin.lox.vm
 
 import dev.yidafu.kotlin.lox.common.unreachable
 
-// ktlint-disable filename
-
 inline fun binaryOp(vm: VM, crossinline operator: (pair: Pair<LoxValue<Any>, LoxValue<Any>>) -> LoxValue<Any>) {
     val left = vm.pop()
     val right = vm.pop()
@@ -121,6 +119,63 @@ enum class OpCode {
         }
     },
 
+    OpFalse {
+        override fun exec(vm: VM) {
+            vm.push(LoxValue.LoxBool(false))
+            vm.increment()
+        }
+    },
+
+    OpTrue {
+        override fun exec(vm: VM) {
+            vm.push(LoxValue.LoxBool(true))
+            vm.increment()
+        }
+    },
+
+    OpNil {
+        override fun exec(vm: VM) {
+            vm.push(LoxValue.LoxNil())
+            vm.increment()
+        }
+    },
+
+    OpNot {
+        override fun exec(vm: VM) {
+            when (val value = vm.pop()) {
+                is LoxValue.LoxBool -> {
+                    vm.push(value.isFalsely())
+                    vm.increment()
+                }
+                else -> unreachable()
+            }
+        }
+    },
+
+    OpEqual {
+        override fun exec(vm: VM) {
+            val a = vm.pop()
+            val b = vm.pop()
+            vm.push(LoxValue.LoxBool(a == b))
+        }
+    },
+
+    OpGreater {
+        override fun exec(vm: VM) {
+            binaryOp(vm) {
+                LoxValue.LoxBool(it.second > it.first)
+            }
+            vm.increment()
+        }
+    },
+    OpLess {
+        override fun exec(vm: VM) {
+            binaryOp(vm) {
+                LoxValue.LoxBool(it.second < it.first)
+            }
+            vm.increment()
+        }
+    }
     ;
 
     internal abstract fun exec(vm: VM)

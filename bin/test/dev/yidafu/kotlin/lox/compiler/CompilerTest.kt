@@ -24,4 +24,13 @@ class CompilerTest {
         val output = execute("1.2 + 3; return;")
         assertEquals("[LoxNumber] 4.2", output)
     }
+
+    @Test
+    fun binaryEqualTest() {
+        val output = execute("2 < 3; return;")
+        assertEquals("[LoxBool] true", output)
+
+        val output2 = execute("2 >= 3; return;")
+        assertEquals("[LoxBool] false", output2)
+    }
 }
