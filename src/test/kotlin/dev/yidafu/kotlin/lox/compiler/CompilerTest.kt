@@ -21,16 +21,26 @@ class CompilerTest {
 
     @Test
     fun binaryTest() {
-        val output = execute("1.2 + 3; return;")
+        val output = execute("print 1.2 + 3;")
         assertEquals("[LoxNumber] 4.2", output)
     }
 
     @Test
+    fun stringPlusTest() {
+        val output = execute(
+            """
+            print "st" + "ri" + "ng";
+            """
+        )
+        assertEquals("[LoxString] string", output)
+    }
+
+    @Test
     fun binaryEqualTest() {
-        val output = execute("2 < 3; return;")
+        val output = execute("print 2 < 3;")
         assertEquals("[LoxBool] true", output)
 
-        val output2 = execute("2 >= 3; return;")
+        val output2 = execute("print 2 >= 3;")
         assertEquals("[LoxBool] false", output2)
     }
 }

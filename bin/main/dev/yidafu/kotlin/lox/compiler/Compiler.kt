@@ -58,7 +58,7 @@ class Compiler(val chunk: Chunk) : Expression.Visitor<Unit>, Statement.Visitor<U
                 chunk.addConstant(LoxValue.LoxNumber(value.toDouble()), -1)
             }
             is String -> {
-//                chunk.
+                chunk.addConstant(LoxValue.LoxString(value.toString()), -1)
             }
             else -> unreachable()
         }
@@ -105,7 +105,8 @@ class Compiler(val chunk: Chunk) : Expression.Visitor<Unit>, Statement.Visitor<U
     }
 
     override fun visitPrintStatement(statement: Print) {
-        TODO("Not yet implemented")
+        compile(statement.expr)
+        chunk.write(OpCode.OpPrint.toByte(), -1)
     }
 
     override fun visitFuncStatement(statement: Func) {

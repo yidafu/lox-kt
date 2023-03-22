@@ -7,6 +7,10 @@ sealed class LoxValue<out T>(val value: T) {
         operator fun plus(that: LoxString): LoxString {
             return LoxString(this.value + that.value)
         }
+
+        override fun toString(): String {
+            return "[LoxString] ${this.value}"
+        }
     }
 
     class LoxNumber(value: Double) : LoxValue<Double>(value) {

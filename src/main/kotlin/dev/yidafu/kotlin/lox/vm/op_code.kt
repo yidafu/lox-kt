@@ -3,15 +3,15 @@ package dev.yidafu.kotlin.lox.vm
 import dev.yidafu.kotlin.lox.common.unreachable
 
 inline fun binaryOp(vm: VM, crossinline operator: (pair: Pair<LoxValue<Any>, LoxValue<Any>>) -> LoxValue<Any>) {
-    val left = vm.pop()
     val right = vm.pop()
+    val left = vm.pop()
     vm.push(operator(Pair(left, right)))
 }
 
 enum class OpCode {
     OpReturn {
         override fun exec(vm: VM) {
-            println(vm.pop())
+//            println(vm.pop())
             vm.chunk.ip = vm.chunk.codes.size
         }
 
@@ -154,16 +154,17 @@ enum class OpCode {
 
     OpEqual {
         override fun exec(vm: VM) {
-            val a = vm.pop()
-            val b = vm.pop()
-            vm.push(LoxValue.LoxBool(a == b))
+            binaryOp(vm) {
+                LoxValue.LoxBool(it.first == it.second)
+            }
+            vm.increment()
         }
     },
 
     OpGreater {
         override fun exec(vm: VM) {
             binaryOp(vm) {
-                LoxValue.LoxBool(it.second > it.first)
+                LoxValue.LoxBool(it.first > it.second)
             }
             vm.increment()
         }
@@ -171,8 +172,15 @@ enum class OpCode {
     OpLess {
         override fun exec(vm: VM) {
             binaryOp(vm) {
-                LoxValue.LoxBool(it.second < it.first)
+                LoxValue.LoxBool(it.first < it.second)
             }
+            vm.increment()
+        }
+    },
+
+    OpPrint {
+        override fun exec(vm: VM) {
+            printValue(vm.pop())
             vm.increment()
         }
     }
