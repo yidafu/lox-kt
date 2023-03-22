@@ -1,8 +1,6 @@
 package dev.yidafu.kotlin.lox.compiler
 
 import com.github.stefanbirkner.systemlambda.SystemLambda
-import dev.yidafu.kotlin.lox.interperter.Interperter
-import dev.yidafu.kotlin.lox.interperter.Resolver
 import dev.yidafu.kotlin.lox.parser.Parser
 import dev.yidafu.kotlin.lox.parser.Scanner
 import dev.yidafu.kotlin.lox.vm.Chunk

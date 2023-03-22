@@ -1,6 +1,5 @@
 package dev.yidafu.kotlin.lox.vm
 
-
 class Chunk(
     /**
      * instruction pointer

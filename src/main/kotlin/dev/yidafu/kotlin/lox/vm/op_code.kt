@@ -1,6 +1,10 @@
-package dev.yidafu.kotlin.lox.vm // ktlint-disable filename
+package dev.yidafu.kotlin.lox.vm
 
-inline fun binaryOp(vm: VM, crossinline operator: (pair: Pair<Value, Value>) -> Value) {
+import dev.yidafu.kotlin.lox.common.unreachable
+
+// ktlint-disable filename
+
+inline fun binaryOp(vm: VM, crossinline operator: (pair: Pair<LoxValue<Any>, LoxValue<Any>>) -> LoxValue<Any>) {
     val left = vm.pop()
     val right = vm.pop()
     vm.push(operator(Pair(left, right)))
@@ -44,15 +48,29 @@ enum class OpCode {
 
     OpNegate {
         override fun exec(vm: VM) {
-            vm.push(-vm.pop())
-            vm.increment()
+            when (val value = vm.pop()) {
+                is LoxValue.LoxNumber -> {
+                    vm.push(-value)
+                    vm.increment()
+                }
+                else -> unreachable()
+            }
         }
     },
 
     OpAdd {
         override fun exec(vm: VM) {
             binaryOp(vm) {
-                it.first + it.second
+                val (a, b) = it
+                when {
+                    (a is LoxValue.LoxNumber && b is LoxValue.LoxNumber) -> {
+                        a + b
+                    }
+                    (a is LoxValue.LoxString && b is LoxValue.LoxString) -> {
+                        a + b
+                    }
+                    else -> unreachable()
+                }
             }
             vm.increment()
         }
@@ -61,7 +79,13 @@ enum class OpCode {
     OpSubtract {
         override fun exec(vm: VM) {
             binaryOp(vm) {
-                it.first - it.second
+                val (a, b) = it
+                when {
+                    (a is LoxValue.LoxNumber && b is LoxValue.LoxNumber) -> {
+                        a - b
+                    }
+                    else -> unreachable()
+                }
             }
             vm.increment()
         }
@@ -70,7 +94,13 @@ enum class OpCode {
     OpMultiply {
         override fun exec(vm: VM) {
             binaryOp(vm) {
-                it.first * it.second
+                val (a, b) = it
+                when {
+                    (a is LoxValue.LoxNumber && b is LoxValue.LoxNumber) -> {
+                        a * b
+                    }
+                    else -> unreachable()
+                }
             }
             vm.increment()
         }
@@ -79,7 +109,13 @@ enum class OpCode {
     OpDivide {
         override fun exec(vm: VM) {
             binaryOp(vm) {
-                it.first / it.second
+                val (a, b) = it
+                when {
+                    (a is LoxValue.LoxNumber && b is LoxValue.LoxNumber) -> {
+                        a * b
+                    }
+                    else -> unreachable()
+                }
             }
             vm.increment()
         }
@@ -107,6 +143,6 @@ enum class OpCode {
     }
 }
 
-fun printValue(value: Value) {
+fun printValue(value: LoxValue<Any>) {
     print(value)
 }
