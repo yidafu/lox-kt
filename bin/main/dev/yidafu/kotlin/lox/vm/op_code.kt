@@ -1,7 +1,5 @@
 package dev.yidafu.kotlin.lox.vm
 
-import dev.yidafu.kotlin.lox.common.unreachable
-
 inline fun binaryOp(vm: VM, crossinline operator: (pair: Pair<LoxValue<Any>, LoxValue<Any>>) -> LoxValue<Any>) {
     val right = vm.pop()
     val left = vm.pop()
@@ -10,11 +8,6 @@ inline fun binaryOp(vm: VM, crossinline operator: (pair: Pair<LoxValue<Any>, Lox
 
 enum class OpCode {
     OpReturn {
-        override fun exec(vm: VM) {
-//            println(vm.pop())
-            vm.chunk.ip = vm.chunk.codes.size
-        }
-
         override fun decompile(vm: VM) {
             super.decompile(vm)
             // move ip to end of chunk
@@ -24,13 +17,6 @@ enum class OpCode {
     },
 
     OpConstant {
-        override fun exec(vm: VM) {
-            val chunk = vm.chunk
-            val cIdx = chunk.codes[chunk.ip + 1].toInt()
-            vm.push(chunk.constants[cIdx])
-            vm.increment(2)
-        }
-
         override fun decompile(vm: VM) {
             val chunk = vm.chunk
             val cIdx = chunk.codes[chunk.ip + 1].toInt()
@@ -44,156 +30,45 @@ enum class OpCode {
         }
     },
 
-    OpNegate {
-        override fun exec(vm: VM) {
-            when (val value = vm.pop()) {
-                is LoxValue.LoxNumber -> {
-                    vm.push(-value)
-                    vm.increment()
-                }
-                else -> unreachable()
-            }
-        }
-    },
+    OpNegate,
 
-    OpAdd {
-        override fun exec(vm: VM) {
-            binaryOp(vm) {
-                val (a, b) = it
-                when {
-                    (a is LoxValue.LoxNumber && b is LoxValue.LoxNumber) -> {
-                        a + b
-                    }
-                    (a is LoxValue.LoxString && b is LoxValue.LoxString) -> {
-                        a + b
-                    }
-                    else -> unreachable()
-                }
-            }
-            vm.increment()
-        }
-    },
+    OpAdd,
 
-    OpSubtract {
-        override fun exec(vm: VM) {
-            binaryOp(vm) {
-                val (a, b) = it
-                when {
-                    (a is LoxValue.LoxNumber && b is LoxValue.LoxNumber) -> {
-                        a - b
-                    }
-                    else -> unreachable()
-                }
-            }
-            vm.increment()
-        }
-    },
+    OpSubtract,
 
-    OpMultiply {
-        override fun exec(vm: VM) {
-            binaryOp(vm) {
-                val (a, b) = it
-                when {
-                    (a is LoxValue.LoxNumber && b is LoxValue.LoxNumber) -> {
-                        a * b
-                    }
-                    else -> unreachable()
-                }
-            }
-            vm.increment()
-        }
-    },
+    OpMultiply,
 
-    OpDivide {
-        override fun exec(vm: VM) {
-            binaryOp(vm) {
-                val (a, b) = it
-                when {
-                    (a is LoxValue.LoxNumber && b is LoxValue.LoxNumber) -> {
-                        a * b
-                    }
-                    else -> unreachable()
-                }
-            }
-            vm.increment()
-        }
-    },
+    OpDivide,
 
-    OpFalse {
-        override fun exec(vm: VM) {
-            vm.push(LoxValue.LoxBool(false))
-            vm.increment()
-        }
-    },
+    OpFalse,
 
-    OpTrue {
-        override fun exec(vm: VM) {
-            vm.push(LoxValue.LoxBool(true))
-            vm.increment()
-        }
-    },
+    OpTrue,
 
-    OpNil {
-        override fun exec(vm: VM) {
-            vm.push(LoxValue.LoxNil())
-            vm.increment()
-        }
-    },
+    OpNil,
 
-    OpNot {
-        override fun exec(vm: VM) {
-            when (val value = vm.pop()) {
-                is LoxValue.LoxBool -> {
-                    vm.push(value.isFalsely())
-                    vm.increment()
-                }
-                else -> unreachable()
-            }
-        }
-    },
+    OpNot,
 
-    OpEqual {
-        override fun exec(vm: VM) {
-            binaryOp(vm) {
-                LoxValue.LoxBool(it.first == it.second)
-            }
-            vm.increment()
-        }
-    },
+    OpEqual,
 
-    OpGreater {
-        override fun exec(vm: VM) {
-            binaryOp(vm) {
-                LoxValue.LoxBool(it.first > it.second)
-            }
-            vm.increment()
-        }
-    },
-    OpLess {
-        override fun exec(vm: VM) {
-            binaryOp(vm) {
-                LoxValue.LoxBool(it.first < it.second)
-            }
-            vm.increment()
-        }
-    },
+    OpGreater,
+    OpLess,
 
-    OpPrint {
-        override fun exec(vm: VM) {
-            printValue(vm.pop())
-            vm.increment()
-        }
-    }
+    OpPrint,
+    OpPop,
+
+    OpDefineGlobal,
+
+    OpSetGlobal,
+
+    OpGetGlobal,
     ;
-
-    internal abstract fun exec(vm: VM)
 
     /**
      * ip will plus 1
      */
     internal open fun decompile(vm: VM) {
         println("0X${vm.chunk.ip.toString(16).padStart(8, '0')} ${this.name} [${this.ordinal}]")
-        vm.chunk.ip += 1
+        vm.increment()
     }
 
     fun toByte(): Byte {

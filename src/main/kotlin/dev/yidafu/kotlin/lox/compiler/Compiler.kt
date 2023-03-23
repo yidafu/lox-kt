@@ -6,8 +6,8 @@ import dev.yidafu.kotlin.lox.common.Grouping
 import dev.yidafu.kotlin.lox.common.Set
 import dev.yidafu.kotlin.lox.parser.TokenType
 import dev.yidafu.kotlin.lox.vm.Chunk
-import dev.yidafu.kotlin.lox.vm.LoxValue
-import dev.yidafu.kotlin.lox.vm.OpCode
+import dev.yidafu.kotlin.lox.vm.LoxValue.*
+import dev.yidafu.kotlin.lox.vm.OpCode.*
 
 class Compiler(val chunk: Chunk) : Expression.Visitor<Unit>, Statement.Visitor<Unit> {
     fun compile(stats: List<Statement>) {
@@ -17,7 +17,9 @@ class Compiler(val chunk: Chunk) : Expression.Visitor<Unit>, Statement.Visitor<U
     }
 
     override fun visitAssignExpression(expression: Assign) {
-        TODO("Not yet implemented")
+        compile(expression.value)
+        chunk.write(OpSetGlobal.toByte(), expression.name.line)
+        chunk.addConstant(LoxString(expression.name.lexeme), expression.name.line)
     }
 
     override fun visitBinaryExpression(expression: Binary) {
@@ -25,16 +27,16 @@ class Compiler(val chunk: Chunk) : Expression.Visitor<Unit>, Statement.Visitor<U
         compile(expression.right)
         val line = expression.operator.line
         val opCodes = when (val operator = expression.operator.type) {
-            TokenType.PLUS -> arrayOf(OpCode.OpAdd)
-            TokenType.MINUS -> arrayOf(OpCode.OpSubtract)
-            TokenType.STAR -> arrayOf(OpCode.OpMultiply)
-            TokenType.SLASH -> arrayOf(OpCode.OpDivide)
-            TokenType.BANG_EQUAL -> arrayOf(OpCode.OpEqual, OpCode.OpNot)
-            TokenType.EQUAL_EQUAL -> arrayOf(OpCode.OpEqual)
-            TokenType.GREATER -> arrayOf(OpCode.OpGreater)
-            TokenType.GREATER_EQUAL -> arrayOf(OpCode.OpLess, OpCode.OpNot)
-            TokenType.LESS -> arrayOf(OpCode.OpLess)
-            TokenType.LESS_EQUAL -> arrayOf(OpCode.OpGreater, OpCode.OpNot)
+            TokenType.PLUS -> arrayOf(OpAdd)
+            TokenType.MINUS -> arrayOf(OpSubtract)
+            TokenType.STAR -> arrayOf(OpMultiply)
+            TokenType.SLASH -> arrayOf(OpDivide)
+            TokenType.BANG_EQUAL -> arrayOf(OpEqual, OpNot)
+            TokenType.EQUAL_EQUAL -> arrayOf(OpEqual)
+            TokenType.GREATER -> arrayOf(OpGreater)
+            TokenType.GREATER_EQUAL -> arrayOf(OpLess, OpNot)
+            TokenType.LESS -> arrayOf(OpLess)
+            TokenType.LESS_EQUAL -> arrayOf(OpGreater, OpNot)
             else -> unreachable()
         }.map { it.toByte() }
         chunk.write(opCodes, line)
@@ -55,10 +57,10 @@ class Compiler(val chunk: Chunk) : Expression.Visitor<Unit>, Statement.Visitor<U
     override fun visitLiteralExpression(expression: Literal) {
         when (val value = expression.value) {
             is Number -> {
-                chunk.addConstant(LoxValue.LoxNumber(value.toDouble()), -1)
+                chunk.addConstant(LoxNumber(value.toDouble()), -1)
             }
             is String -> {
-                chunk.addConstant(LoxValue.LoxString(value.toString()), -1)
+                chunk.addConstant(LoxString(value.toString()), -1)
             }
             else -> unreachable()
         }
@@ -85,7 +87,8 @@ class Compiler(val chunk: Chunk) : Expression.Visitor<Unit>, Statement.Visitor<U
     }
 
     override fun visitVariableExpression(expression: Variable) {
-        TODO("Not yet implemented")
+        chunk.write(OpGetGlobal.toByte(), expression.name.line)
+        chunk.addConstant(LoxString(expression.name.lexeme), expression.name.line)
     }
 
     override fun visitBlockStatement(statement: Block) {
@@ -106,7 +109,7 @@ class Compiler(val chunk: Chunk) : Expression.Visitor<Unit>, Statement.Visitor<U
 
     override fun visitPrintStatement(statement: Print) {
         compile(statement.expr)
-        chunk.write(OpCode.OpPrint.toByte(), -1)
+        chunk.write(OpPrint.toByte(), -1)
     }
 
     override fun visitFuncStatement(statement: Func) {
@@ -114,11 +117,17 @@ class Compiler(val chunk: Chunk) : Expression.Visitor<Unit>, Statement.Visitor<U
     }
 
     override fun visitReturnStatement(statement: Return) {
-        chunk.write(OpCode.OpReturn.toByte(), statement.keyword.line)
+        chunk.write(OpReturn.toByte(), statement.keyword.line)
     }
 
     override fun visitVarStatement(statement: Var) {
-        TODO("Not yet implemented")
+
+        statement.init?.let {
+            compile(it)
+        }
+        val name = statement.name.lexeme
+        chunk.write(OpDefineGlobal.toByte(), statement.name.line)
+        chunk.addConstant(LoxString(name), statement.name.line)
     }
 
     override fun visitWhileStatement(statement: While) {

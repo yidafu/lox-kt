@@ -15,6 +15,8 @@ class CompilerTest {
             val compiler = Compiler(Chunk())
             compiler.compile(stats)
             val vm = VM(compiler.chunk)
+//            vm.decompile()
+//            vm.reset()
             vm.exec()
         }.trim()
     }
@@ -42,5 +44,16 @@ class CompilerTest {
 
         val output2 = execute("print 2 >= 3;")
         assertEquals("[LoxBool] false", output2)
+    }
+
+    @Test
+    fun variableDeclareTest() {
+        val output = execute(
+            """
+            var a = "ing";
+            print "str" + a;
+            """.trimIndent()
+        )
+        assertEquals("[LoxString] String", output)
     }
 }
