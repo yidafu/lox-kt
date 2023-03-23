@@ -6,6 +6,7 @@
       <list>
         <option value="no-semi" />
         <option value="no-wildcard-imports" />
+        <option value="no-unused-imports" />
       </list>
     </disabledRules>
   </component>

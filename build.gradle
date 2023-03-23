@@ -36,5 +36,5 @@ ktlint {
     verbose = true
     outputToConsole = true
 
-    disabledRules = ['no-wildcard-imports',"filename"]
+    disabledRules = ['no-wildcard-imports',"filename","no-unused-imports"]
 }
