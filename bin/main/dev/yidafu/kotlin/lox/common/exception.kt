@@ -38,6 +38,9 @@ class LoxSupperClassException : RuntimeException("Superclass must be Class")
 class LoxDuplicateVariableException : RuntimeException("Can't declare variable with the some name twice")
 
 class LoxMaxOffsetLimitException : RuntimeException("Too many code to jump over.")
+
+class LoxTooManyArgumentException : RuntimeException("too many argument")
+
 @Throws
 fun unreachable(): Nothing {
     throw ParseException("unreachable")

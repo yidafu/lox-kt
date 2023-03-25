@@ -120,7 +120,7 @@ class Interperter : Expression.Visitor<AnyValue>, dev.yidafu.kotlin.lox.common.S
             throw LoxCallableException()
         }
 
-        val function = callee as LoxCallable
+        val function = callee
         return function.call(this, args)
     }
 

@@ -4,10 +4,19 @@ import dev.yidafu.kotlin.lox.common.*
 import dev.yidafu.kotlin.lox.common.Class
 import dev.yidafu.kotlin.lox.common.Grouping
 import dev.yidafu.kotlin.lox.common.Set
+import dev.yidafu.kotlin.lox.interperter.LoxCallable
 import dev.yidafu.kotlin.lox.parser.TokenType
 import dev.yidafu.kotlin.lox.vm.Chunk
+import dev.yidafu.kotlin.lox.vm.FunctionObject
+import dev.yidafu.kotlin.lox.vm.LoxValue
 import dev.yidafu.kotlin.lox.vm.LoxValue.*
 import dev.yidafu.kotlin.lox.vm.OpCode.*
+import java.util.Stack
+
+enum class FunctionType {
+    FunctionType,
+    ScriptType;
+}
 
 class Local(
     val name: String,
@@ -15,14 +24,24 @@ class Local(
 )
 
 class Compiler(
-    val chunk: Chunk,
+//    val chunk: Chunk,
+    val functions: Stack<FunctionObject> = Stack(),
+//    var funcType: FunctionType = FunctionType.ScriptType,
     val locals: MutableList<Local> = mutableListOf(),
     var scopeDepth: Int = 0,
 ) : Expression.Visitor<Unit>, Statement.Visitor<Unit> {
-    fun compile(stats: List<Statement>) {
+    init {
+        functions.add(FunctionObject(funcName = "main"))
+    }
+
+    val chunk: Chunk
+        get() = functions.peek().chunk
+
+    fun compile(stats: List<Statement>): FunctionObject {
         stats.forEach {
             compile(it)
         }
+        return functions.peek()
     }
 
     override fun visitAssignExpression(expression: Assign) {
@@ -59,7 +78,15 @@ class Compiler(
     }
 
     override fun visitFunCallExpression(expression: FunCall) {
-        TODO("Not yet implemented")
+        compile(expression.callee)
+
+        expression.args.forEach { compile(it) }
+        val argCount = expression.args.size
+        if (argCount > Byte.MAX_VALUE) {
+            throw LoxTooManyArgumentException()
+        }
+
+        chunk.write(listOf(OpCall.toByte(), argCount.toByte()), -1)
     }
 
     override fun visitGetExpression(expression: Get) {
@@ -197,7 +224,26 @@ class Compiler(
     }
 
     override fun visitFuncStatement(statement: Func) {
-        TODO("Not yet implemented")
+        val globalFuncName = statement.name.lexeme
+        val line = statement.name.line
+        if (scopeDepth > 0) {
+            addLocal(globalFuncName)
+        }
+//        funcType = FunctionType.FunctionType
+
+        val funcObj = FunctionObject(statement.params.size, globalFuncName)
+        functions.push(funcObj)
+        scopeWrapper {
+            statement.params.forEach {
+                addLocal(it.lexeme)
+            }
+            compile(statement.body)
+        }
+        functions.pop()
+        chunk.addConstant(LoxFunction(funcObj), line)
+
+        chunk.write(OpSetGlobal, line)
+        chunk.addConstant(LoxString(globalFuncName), line)
     }
 
     override fun visitReturnStatement(statement: Return) {

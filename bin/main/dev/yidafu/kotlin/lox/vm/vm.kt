@@ -1,23 +1,32 @@
 package dev.yidafu.kotlin.lox.vm
 
+import dev.yidafu.kotlin.lox.common.LoxCallableException
 import dev.yidafu.kotlin.lox.common.unreachable
 import dev.yidafu.kotlin.lox.vm.LoxValue.*
 import dev.yidafu.kotlin.lox.vm.OpCode.*
 import java.util.Stack
 
 class VM(
-    val chunk: Chunk,
+    val frames: Stack<CallFrame> = Stack(),
+//    val chunk: Chunk,
     val stack: Stack<LoxValue<Any>> = Stack(),
     private val globals: MutableMap<String, LoxValue<Any>> = mutableMapOf(),
 ) {
-    var ip: Int
+
+    private val frame: CallFrame
+        get() = frames.peek()
+    val chunk: Chunk
+        get() = frame.function.chunk
+
+    private var ip: Int
         get() = chunk.ip
         set(ip) { chunk.ip = ip }
+
     fun exec() {
         while (true) {
             if (ip >= chunk.codes.size) break
 
-            val opCode = chunk.peekOpCode()
+            val opCode = chunk.readOpCode()
 
             increment()
             when (opCode) {
@@ -140,13 +149,13 @@ class VM(
                 }
 
                 OpGetLocal -> {
-                    val index = chunk.peekByte()
+                    val index = chunk.readByte()
                     increment()
-                    push(stack[index.toInt()])
+                    push(frame.slots[index.toInt()])
                 }
                 OpSetLocal -> {
-                    val index = chunk.peekByte()
-                    stack[index.toInt()] = peek()
+                    val index = chunk.readByte()
+                    frame.slots[index.toInt()] = peek()
                     increment()
                 }
 
@@ -166,13 +175,18 @@ class VM(
                     val offset = chunk.readShort()
                     ip -= offset
                 }
+
+                OpCall -> {
+                    val argCount = chunk.readByte()
+                    callValue(peek((argCount + 1).toByte()), argCount)
+                }
             }
         }
     }
 
     fun getValue(): LoxValue<Any> {
         increment()
-        val index = chunk.peekByte().toInt()
+        val index = chunk.readByte().toInt()
         return chunk.constants[index]
     }
 
@@ -196,7 +210,7 @@ class VM(
 
     fun reset() {
         ip = 0
-        stack.clear()
+        frame.slots.clear()
     }
 
     fun push(value: LoxValue<Any>) {
@@ -207,12 +221,32 @@ class VM(
         return stack.pop()
     }
 
-    private fun peek(): LoxValue<Any> {
-        return stack.peek()
+    private fun peek(n: Byte = 1): LoxValue<Any> {
+        val index = stack.size - n
+        return stack[index]
     }
 
     fun increment(step: Int = 1): Int {
         ip += step
         return ip
+    }
+
+    fun callValue(callee: LoxValue<Any>, argCount: Byte) {
+        when (callee) {
+            is LoxFunction -> {
+                call(callee, argCount)
+            }
+            else -> throw LoxCallableException()
+        }
+    }
+
+    fun call(callee: LoxFunction, argCount: Byte) {
+        val top = stack.size
+        val frame = CallFrame(
+            callee.value,
+            StackSlice(stack, top - 1 - argCount),
+        )
+
+        frames.push(frame)
     }
 }

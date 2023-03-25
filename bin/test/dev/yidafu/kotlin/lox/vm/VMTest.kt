@@ -6,7 +6,7 @@ class VMTest {
 
     @Test
     fun binaryPlusTest() {
-        val vm = VM(Chunk())
+        val vm = VM()
         vm.chunk.addConstant(LoxValue.LoxNumber(2.3), 1)
         vm.chunk.addConstant(LoxValue.LoxNumber(3.4), 1)
         vm.chunk.write(OpCode.OpAdd.toByte(), 1)

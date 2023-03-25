@@ -23,11 +23,11 @@ class Chunk(
         lines.add(line)
     }
 
-    fun peekOpCode(): OpCode {
+    fun readOpCode(): OpCode {
         return (OpCode from codes[ip]) ?: unreachable()
     }
 
-    fun peekByte(): Byte {
+    fun readByte(): Byte {
         return codes[ip]
     }
 
@@ -40,6 +40,10 @@ class Chunk(
     fun write(bytes: List<Byte>, line: Int) {
         codes.addAll(bytes)
     }
+
+//    fun write(bytes: List<OpCode>, line: Int) {
+//        codes.addAll(bytes.map{ it.toByte() })
+//    }
 
     fun writeJump(byte: Byte): Int {
         codes.addAll(listOf(byte, (0xff).toByte(), (0xff).toByte()))

@@ -61,7 +61,7 @@ enum class OpCode {
     OpSetGlobal {
         override fun decompile(vm: VM) {
             super.decompile(vm)
-            print("\tset global [${vm.chunk.peekByte()}]")
+            print("\tset global [${vm.chunk.readByte()}]")
             vm.increment()
             println()
         }
@@ -70,7 +70,7 @@ enum class OpCode {
     OpGetGlobal {
         override fun decompile(vm: VM) {
             super.decompile(vm)
-            print("\tget global [${vm.chunk.peekByte()}]")
+            print("\tget global [${vm.chunk.readByte()}]")
             vm.increment(2)
             println()
         }
@@ -79,7 +79,7 @@ enum class OpCode {
     OpGetLocal {
         override fun decompile(vm: VM) {
             super.decompile(vm)
-            print("\tget local stack[${vm.chunk.peekByte()}]")
+            print("\tget local stack[${vm.chunk.readByte()}]")
             vm.increment()
 
             println()
@@ -89,7 +89,7 @@ enum class OpCode {
     OpSetLocal {
         override fun decompile(vm: VM) {
             super.decompile(vm)
-            print("\tset local stack[${vm.chunk.peekByte()}]")
+            print("\tset local stack[${vm.chunk.readByte()}]")
             vm.increment()
 
             println()
@@ -118,6 +118,8 @@ enum class OpCode {
             println("\t loop start at -$offset")
         }
     },
+
+    OpCall
     ;
 
     /**

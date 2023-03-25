@@ -3,7 +3,8 @@ package dev.yidafu.kotlin.lox.compiler
 import com.github.stefanbirkner.systemlambda.SystemLambda
 import dev.yidafu.kotlin.lox.parser.Parser
 import dev.yidafu.kotlin.lox.parser.Scanner
-import dev.yidafu.kotlin.lox.vm.Chunk
+import dev.yidafu.kotlin.lox.vm.CallFrame
+import dev.yidafu.kotlin.lox.vm.StackSlice
 import dev.yidafu.kotlin.lox.vm.VM
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -12,9 +13,10 @@ class CompilerTest {
     private fun execute(srcCode: String): String {
         return SystemLambda.tapSystemOut {
             val stats = Parser(Scanner((srcCode)).scanTokens()).parse()
-            val compiler = Compiler(Chunk())
-            compiler.compile(stats)
-            val vm = VM(compiler.chunk)
+            val compiler = Compiler()
+            val funcObj = compiler.compile(stats)
+            val vm = VM()
+            vm.frames.push(CallFrame(funcObj, StackSlice(vm.stack, 0)))
 //            vm.decompile()
 //            vm.reset()
             vm.exec()
@@ -109,5 +111,21 @@ class CompilerTest {
             """.trimIndent()
         )
         assertEquals("[LoxNumber] 1.0[LoxNumber] 2.0", output)
+    }
+
+    @Test
+    fun funcDeclareTest() {
+
+        val output = execute(
+            """
+            fun foo() {
+                var a = 1;
+                var b = 2;
+                print a + b;
+            }
+            foo();
+            """.trimIndent()
+        )
+        assertEquals("[LoxNumber] 3.0", output)
     }
 }

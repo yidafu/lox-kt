@@ -47,6 +47,12 @@ sealed class LoxValue<out T>(val value: T) {
         }
     }
 
+    class LoxFunction(value: FunctionObject) : LoxValue<FunctionObject>(value) {
+        override fun toString(): String {
+            return "[LoxFunction] ${value.funcName}"
+        }
+    }
+
     override fun toString(): String {
         return "[LoxValue] ${this.value}"
     }
@@ -56,6 +62,7 @@ sealed class LoxValue<out T>(val value: T) {
         is LoxBool -> LoxBool(!this.value)
         is LoxNumber -> LoxBool(this.value == 0.0)
         is LoxString -> LoxBool(this.value.isNotEmpty())
+        is LoxFunction -> LoxBool(true)
     }
 
     override fun equals(other: Any?): Boolean = when {
