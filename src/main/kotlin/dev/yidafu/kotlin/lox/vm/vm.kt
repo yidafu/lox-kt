@@ -13,10 +13,14 @@ enum class InterpretResult {
 }
 
 class VM(
+    mainFun: FunctionObject,
     val frames: Stack<CallFrame> = Stack(),
     val stack: Stack<LoxValue<Any>> = Stack(),
     private val globals: MutableMap<String, LoxValue<Any>> = mutableMapOf(),
 ) {
+    init {
+        frames.push(CallFrame(mainFun, StackSlice(stack, -1)))
+    }
 
     internal val frame: CallFrame
         get() = frames.peek()

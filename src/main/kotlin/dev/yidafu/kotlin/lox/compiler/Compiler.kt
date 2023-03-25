@@ -61,7 +61,7 @@ class Compiler(
         compile(expression.left)
         compile(expression.right)
         val line = expression.operator.line
-        val opCodes = when (val operator = expression.operator.type) {
+        val opCodes = when (expression.operator.type) {
             TokenType.PLUS -> arrayOf(OpAdd)
             TokenType.MINUS -> arrayOf(OpSubtract)
             TokenType.STAR -> arrayOf(OpMultiply)

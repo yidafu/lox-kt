@@ -14,9 +14,8 @@ class CompilerTest {
         return SystemLambda.tapSystemOut {
             val stats = Parser(Scanner((srcCode)).scanTokens()).parse()
             val compiler = Compiler()
-            val funcObj = compiler.compile(stats)
-            val vm = VM()
-            vm.frames.push(CallFrame(funcObj, StackSlice(vm.stack, -1)))
+            val mainFuncObj = compiler.compile(stats)
+            val vm = VM(mainFuncObj)
 //            vm.decompile()
 //            vm.reset()
             vm.exec()
@@ -151,12 +150,12 @@ class CompilerTest {
         }
         val output = execute(
             """
-fun fib(a) {
-    if (a == 1) return 1;
-    if (a == 2) return 2;
-    return fib(a - 1) + fib(a - 2);
-}
-print fib(5);
+            fun fib(a) {
+                if (a == 1) return 1;
+                if (a == 2) return 2;
+                return fib(a - 1) + fib(a - 2);
+            }
+            print fib(5);
             """.trimIndent()
         )
         assertEquals("[LoxNumber] 8.0", "[LoxNumber] ${fib(5.0)}")
