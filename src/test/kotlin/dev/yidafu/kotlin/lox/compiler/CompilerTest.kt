@@ -54,6 +54,20 @@ class CompilerTest {
             print "str" + a;
             """.trimIndent()
         )
-        assertEquals("[LoxString] String", output)
+        assertEquals("[LoxString] string", output)
+    }
+
+    @Test
+    fun blockScopeTest() {
+        val output = execute(
+            """
+            var a = "outer-";
+            {
+                var b = "inner";
+                print a + b;
+            }
+            """.trimIndent()
+        )
+        assertEquals("[LoxString] outer-inner", output)
     }
 }

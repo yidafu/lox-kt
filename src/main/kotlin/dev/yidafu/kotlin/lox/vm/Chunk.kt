@@ -1,5 +1,7 @@
 package dev.yidafu.kotlin.lox.vm
 
+import dev.yidafu.kotlin.lox.common.unreachable
+
 class Chunk(
     /**
      * instruction pointer
@@ -12,6 +14,14 @@ class Chunk(
     fun write(byte: Byte, line: Int) {
         codes.add(byte)
         lines.add(line)
+    }
+
+    fun peekOpCode(): OpCode {
+        return (OpCode from codes[ip]) ?: unreachable()
+    }
+
+    fun peekByte(): Byte {
+        return codes[ip]
     }
 
     fun write(bytes: List<Byte>, line: Int) {

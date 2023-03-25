@@ -9,7 +9,16 @@ import dev.yidafu.kotlin.lox.vm.Chunk
 import dev.yidafu.kotlin.lox.vm.LoxValue.*
 import dev.yidafu.kotlin.lox.vm.OpCode.*
 
-class Compiler(val chunk: Chunk) : Expression.Visitor<Unit>, Statement.Visitor<Unit> {
+class Local(
+    val name: String,
+    val depth: Int,
+)
+
+class Compiler(
+    val chunk: Chunk,
+    val locals: MutableList<Local> = mutableListOf(),
+    var scopeDepth: Int = 0,
+) : Expression.Visitor<Unit>, Statement.Visitor<Unit> {
     fun compile(stats: List<Statement>) {
         stats.forEach {
             compile(it)
@@ -18,8 +27,15 @@ class Compiler(val chunk: Chunk) : Expression.Visitor<Unit>, Statement.Visitor<U
 
     override fun visitAssignExpression(expression: Assign) {
         compile(expression.value)
-        chunk.write(OpSetGlobal.toByte(), expression.name.line)
-        chunk.addConstant(LoxString(expression.name.lexeme), expression.name.line)
+        val name = expression.name.lexeme
+        val line = expression.name.line
+        val localIndex = resolveLocal(name)
+        if (localIndex == -1) {
+            chunk.write(OpSetGlobal.toByte(), line)
+            chunk.addConstant(LoxString(name), line)
+        } else {
+            chunk.write(listOf(OpSetLocal.toByte(), localIndex.toByte()), line)
+        }
     }
 
     override fun visitBinaryExpression(expression: Binary) {
@@ -87,14 +103,44 @@ class Compiler(val chunk: Chunk) : Expression.Visitor<Unit>, Statement.Visitor<U
     }
 
     override fun visitVariableExpression(expression: Variable) {
-        chunk.write(OpGetGlobal.toByte(), expression.name.line)
-        chunk.addConstant(LoxString(expression.name.lexeme), expression.name.line)
+        val nameToken = expression.name
+        val name = nameToken.lexeme
+        val line = nameToken.line
+        val i = resolveLocal(name)
+        if (i == -1) {
+            chunk.write(OpGetGlobal.toByte(), line)
+            chunk.addConstant(LoxString(name), line)
+        } else {
+            chunk.write(listOf(OpGetLocal.toByte(), i.toByte()), line)
+        }
     }
 
+    private fun resolveLocal(name: String): Int {
+        for (i in locals.lastIndex downTo 0) {
+            val local = locals[i]
+            if (local.name == name) return i
+        }
+        return -1
+    }
     override fun visitBlockStatement(statement: Block) {
-        TODO("Not yet implemented")
+        scopeWrapper {
+            statement.statements.forEach { compile(it) }
+        }
+        // 函数执行结束后弹出块里的变量
+        locals.filter { it.depth > scopeDepth }
+            .forEach {
+                chunk.write(OpPop.toByte(), -1)
+                locals.remove(it)
+            }
     }
 
+    private fun scopeWrapper(block: Compiler.() -> Unit) {
+        scopeDepth += 1
+
+        block()
+
+        scopeDepth -= 1
+    }
     override fun visitClassStatement(statement: Class) {
         TODO("Not yet implemented")
     }
@@ -126,10 +172,23 @@ class Compiler(val chunk: Chunk) : Expression.Visitor<Unit>, Statement.Visitor<U
             compile(it)
         }
         val name = statement.name.lexeme
-        chunk.write(OpDefineGlobal.toByte(), statement.name.line)
-        chunk.addConstant(LoxString(name), statement.name.line)
+        if (scopeDepth > 0) {
+            locals
+                .filter { it.depth < scopeDepth }
+                .forEach {
+                    if (it.name == name) {
+                        throw LoxDuplicateVariableException()
+                    }
+                }
+            addLocal(name)
+        } else {
+            chunk.write(OpDefineGlobal.toByte(), statement.name.line)
+            chunk.addConstant(LoxString(name), statement.name.line)
+        }
     }
-
+    private fun addLocal(name: String) {
+        locals.add(Local(name, scopeDepth))
+    }
     override fun visitWhileStatement(statement: While) {
         TODO("Not yet implemented")
     }

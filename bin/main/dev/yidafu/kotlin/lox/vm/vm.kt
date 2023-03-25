@@ -15,7 +15,7 @@ class VM(
         while (true) {
             if (chunk.ip >= chunk.codes.size) break
 
-            val opCode = (OpCode from chunk.codes[chunk.ip]) ?: unreachable()
+            val opCode = chunk.peekOpCode()
 
             increment()
             when (opCode) {
@@ -136,13 +136,24 @@ class VM(
                     val value = globals[name.value] ?: unreachable()
                     push(value)
                 }
+
+                OpGetLocal -> {
+                    val index = chunk.peekByte()
+                    increment()
+                    push(stack[index.toInt()])
+                }
+                OpSetLocal -> {
+                    val index = chunk.peekByte()
+                    stack[index.toInt()] = peek()
+                    increment()
+                }
             }
         }
     }
 
     fun getValue(): LoxValue<Any> {
         increment()
-        val index = chunk.codes[chunk.ip].toInt()
+        val index = chunk.peekByte().toInt()
         return chunk.constants[index]
     }
 

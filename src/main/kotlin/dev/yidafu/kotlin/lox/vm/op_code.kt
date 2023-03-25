@@ -22,7 +22,7 @@ enum class OpCode {
             val cIdx = chunk.codes[chunk.ip + 1].toInt()
 
             super.decompile(vm)
-            print("\t")
+            print("\t $cIdx ==> ")
             printValue(chunk.constants[cIdx])
             println()
 
@@ -58,16 +58,50 @@ enum class OpCode {
 
     OpDefineGlobal,
 
-    OpSetGlobal,
+    OpSetGlobal {
+        override fun decompile(vm: VM) {
+            super.decompile(vm)
+            print("\tset global [${vm.chunk.peekByte()}]")
+            vm.increment()
+            println()
+        }
+    },
 
-    OpGetGlobal,
+    OpGetGlobal {
+        override fun decompile(vm: VM) {
+            super.decompile(vm)
+            print("\tget global [${vm.chunk.peekByte()}]")
+            vm.increment(2)
+            println()
+        }
+    },
+
+    OpGetLocal {
+        override fun decompile(vm: VM) {
+            super.decompile(vm)
+            print("\tget local stack[${vm.chunk.peekByte()}]")
+            vm.increment()
+
+            println()
+        }
+    },
+
+    OpSetLocal {
+        override fun decompile(vm: VM) {
+            super.decompile(vm)
+            print("\tset local stack[${vm.chunk.peekByte()}]")
+            vm.increment()
+
+            println()
+        }
+    },
     ;
 
     /**
      * ip will plus 1
      */
     internal open fun decompile(vm: VM) {
-        println("0X${vm.chunk.ip.toString(16).padStart(8, '0')} ${this.name} [${this.ordinal}]")
+        println("0X${vm.chunk.ip.toString(16).padStart(8, '0')} ${this.name}")
         vm.increment()
     }
 
