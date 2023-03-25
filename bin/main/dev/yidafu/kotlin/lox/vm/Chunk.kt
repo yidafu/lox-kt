@@ -23,20 +23,6 @@ class Chunk(
         lines.add(line)
     }
 
-    fun readOpCode(): OpCode {
-        return (OpCode from codes[ip]) ?: unreachable()
-    }
-
-    fun readByte(): Byte {
-        return codes[ip]
-    }
-
-    fun readShort(): Short {
-        val offset = ((codes[ip].toInt() shr 8) or (codes[ip + 1].toInt())).toShort()
-        ip += 2
-        return offset
-    }
-
     fun write(bytes: List<Byte>, line: Int) {
         codes.addAll(bytes)
     }

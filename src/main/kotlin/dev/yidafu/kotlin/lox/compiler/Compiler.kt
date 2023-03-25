@@ -247,6 +247,7 @@ class Compiler(
     }
 
     override fun visitReturnStatement(statement: Return) {
+        statement.value?.let { compile(it) }
         chunk.write(OpReturn.toByte(), statement.keyword.line)
     }
 

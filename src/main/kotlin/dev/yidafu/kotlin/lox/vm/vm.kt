@@ -6,36 +6,46 @@ import dev.yidafu.kotlin.lox.vm.LoxValue.*
 import dev.yidafu.kotlin.lox.vm.OpCode.*
 import java.util.Stack
 
+enum class InterpretResult {
+    CompileError,
+    RuntimeError,
+    Ok;
+}
+
 class VM(
     val frames: Stack<CallFrame> = Stack(),
-//    val chunk: Chunk,
     val stack: Stack<LoxValue<Any>> = Stack(),
     private val globals: MutableMap<String, LoxValue<Any>> = mutableMapOf(),
 ) {
 
-    private val frame: CallFrame
+    internal val frame: CallFrame
         get() = frames.peek()
-    val chunk: Chunk
-        get() = frame.function.chunk
 
     private var ip: Int
-        get() = chunk.ip
-        set(ip) { chunk.ip = ip }
+        get() = frame.ip
+        set(ip) { frame.ip = ip }
 
-    fun exec() {
+    fun exec(): InterpretResult {
         while (true) {
-            if (ip >= chunk.codes.size) break
+            if (ip >= frame.codes.size) break
 
-            val opCode = chunk.readOpCode()
+            val opCode = frame.readOpCode()
 
             increment()
             when (opCode) {
                 OpReturn -> {
-                    ip = chunk.codes.size
+                    val result = pop()
+                    val lastFrame = frames.pop()
+                    if (frames.size == 0) {
+//                        pop()
+                        return InterpretResult.Ok
+                    }
+                    lastFrame.slots.clear()
+                    push(result)
                 }
                 OpConstant -> {
-                    val cIdx = chunk.codes[ip].toInt()
-                    push(chunk.constants[cIdx])
+                    val cIdx = frame.codes[ip].toInt()
+                    push(frame.constants[cIdx])
                     increment()
                 }
                 OpNegate -> {
@@ -149,45 +159,47 @@ class VM(
                 }
 
                 OpGetLocal -> {
-                    val index = chunk.readByte()
+                    val index = frame.readByte()
                     increment()
                     push(frame.slots[index.toInt()])
                 }
                 OpSetLocal -> {
-                    val index = chunk.readByte()
+                    val index = frame.readByte()
                     frame.slots[index.toInt()] = peek()
                     increment()
                 }
 
                 OpJumpIfFalse -> {
-                    val offset = chunk.readShort()
+                    val offset = frame.readShort()
                     if (peek().isFalsely().value) {
                         ip += offset.toInt()
                     }
                 }
 
                 OpJump -> {
-                    val offset = chunk.readShort()
+                    val offset = frame.readShort()
                     ip += offset.toInt()
                 }
 
                 OpLoop -> {
-                    val offset = chunk.readShort()
+                    val offset = frame.readShort()
                     ip -= offset
                 }
 
                 OpCall -> {
-                    val argCount = chunk.readByte()
+                    val argCount = frame.readByte()
+                    increment()
                     callValue(peek((argCount + 1).toByte()), argCount)
                 }
             }
         }
+        return InterpretResult.RuntimeError
     }
 
     fun getValue(): LoxValue<Any> {
         increment()
-        val index = chunk.readByte().toInt()
-        return chunk.constants[index]
+        val index = frame.readByte().toInt()
+        return frame.constants[index]
     }
 
     private fun getStringValue(): LoxString = when (val value = getValue()) {
@@ -200,9 +212,9 @@ class VM(
 
     fun decompile() {
         while (true) {
-            if (ip >= chunk.codes.size) break
+            if (ip >= frame.codes.size) break
 
-            val opCode = OpCode from chunk.codes[ip]
+            val opCode = OpCode from frame.codes[ip]
 
             opCode?.decompile(this)
         }
@@ -210,7 +222,7 @@ class VM(
 
     fun reset() {
         ip = 0
-        frame.slots.clear()
+        stack.clear()
     }
 
     fun push(value: LoxValue<Any>) {

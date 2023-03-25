@@ -11,14 +11,14 @@ enum class OpCode {
         override fun decompile(vm: VM) {
             super.decompile(vm)
             // move ip to end of chunk
-            vm.chunk.ip = vm.chunk.codes.size
+            vm.frame.ip = vm.frame.codes.size
             return
         }
     },
 
     OpConstant {
         override fun decompile(vm: VM) {
-            val chunk = vm.chunk
+            val chunk = vm.frame.chunk
             val cIdx = chunk.codes[chunk.ip + 1].toInt()
 
             super.decompile(vm)
@@ -61,7 +61,7 @@ enum class OpCode {
     OpSetGlobal {
         override fun decompile(vm: VM) {
             super.decompile(vm)
-            print("\tset global [${vm.chunk.readByte()}]")
+            print("\tset global [${vm.frame.readByte()}]")
             vm.increment()
             println()
         }
@@ -70,7 +70,7 @@ enum class OpCode {
     OpGetGlobal {
         override fun decompile(vm: VM) {
             super.decompile(vm)
-            print("\tget global [${vm.chunk.readByte()}]")
+            print("\tget global [${vm.frame.readByte()}]")
             vm.increment(2)
             println()
         }
@@ -79,7 +79,7 @@ enum class OpCode {
     OpGetLocal {
         override fun decompile(vm: VM) {
             super.decompile(vm)
-            print("\tget local stack[${vm.chunk.readByte()}]")
+            print("\tget local stack[${vm.frame.readByte()}]")
             vm.increment()
 
             println()
@@ -89,7 +89,7 @@ enum class OpCode {
     OpSetLocal {
         override fun decompile(vm: VM) {
             super.decompile(vm)
-            print("\tset local stack[${vm.chunk.readByte()}]")
+            print("\tset local stack[${vm.frame.readByte()}]")
             vm.increment()
 
             println()
@@ -99,14 +99,14 @@ enum class OpCode {
     OpJumpIfFalse {
         override fun decompile(vm: VM) {
             super.decompile(vm)
-            val offset = vm.chunk.readShort()
+            val offset = vm.frame.readShort()
             println("\t offset $offset")
         }
     },
     OpJump {
         override fun decompile(vm: VM) {
             super.decompile(vm)
-            val offset = vm.chunk.readShort()
+            val offset = vm.frame.readShort()
             println("\t offset $offset")
         }
     },
@@ -114,7 +114,7 @@ enum class OpCode {
     OpLoop {
         override fun decompile(vm: VM) {
             super.decompile(vm)
-            val offset = vm.chunk.readShort()
+            val offset = vm.frame.readShort()
             println("\t loop start at -$offset")
         }
     },
@@ -126,7 +126,7 @@ enum class OpCode {
      * ip will plus 1
      */
     internal open fun decompile(vm: VM) {
-        println("0X${vm.chunk.ip.toString(16).padStart(8, '0')} ${this.name}")
+        println("0X${vm.frame.ip.toString(16).padStart(8, '0')} ${this.name}")
         vm.increment()
     }
 

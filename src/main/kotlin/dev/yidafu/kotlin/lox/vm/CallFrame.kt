@@ -1,5 +1,6 @@
 package dev.yidafu.kotlin.lox.vm
 
+import dev.yidafu.kotlin.lox.common.unreachable
 import java.util.Stack
 
 class StackSlice(
@@ -22,7 +23,29 @@ class StackSlice(
 }
 
 class CallFrame(
-    val function: FunctionObject,
+    private val function: FunctionObject,
     val slots: StackSlice,
     var ip: Int = 0,
-)
+) {
+    val constants: List<LoxValue<Any>>
+        get() = function.chunk.constants
+    val codes: List<Byte>
+        get() = function.chunk.codes
+
+    val chunk: Chunk
+        get() = function.chunk
+
+    fun readOpCode(): OpCode {
+        return (OpCode from codes[ip]) ?: unreachable()
+    }
+
+    fun readByte(): Byte {
+        return codes[ip]
+    }
+
+    fun readShort(): Short {
+        val offset = ((codes[ip].toInt() shr 8) or (codes[ip + 1].toInt())).toShort()
+        ip += 2
+        return offset
+    }
+}

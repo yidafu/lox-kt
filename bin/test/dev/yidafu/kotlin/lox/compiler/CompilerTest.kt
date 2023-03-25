@@ -16,7 +16,7 @@ class CompilerTest {
             val compiler = Compiler()
             val funcObj = compiler.compile(stats)
             val vm = VM()
-            vm.frames.push(CallFrame(funcObj, StackSlice(vm.stack, 0)))
+            vm.frames.push(CallFrame(funcObj, StackSlice(vm.stack, -1)))
 //            vm.decompile()
 //            vm.reset()
             vm.exec()
@@ -118,14 +118,47 @@ class CompilerTest {
 
         val output = execute(
             """
-            fun foo() {
-                var a = 1;
-                var b = 2;
+            fun foo(a, b) {
                 print a + b;
             }
-            foo();
+            foo(1, 2);
             """.trimIndent()
         )
         assertEquals("[LoxNumber] 3.0", output)
+    }
+
+    @Test
+    fun funcReturnValueTest() {
+
+        val output = execute(
+            """
+            fun foo(a, b) {
+                return a + b;
+            }
+            print foo(1, 2) + foo(3, 4);
+            """.trimIndent()
+        )
+        assertEquals("[LoxNumber] 10.0", output)
+    }
+
+    @Test
+    fun fibTest() {
+
+        fun fib(a: Double): Double {
+            if (a == 1.0) return 1.0
+            if (a == 2.0) return 2.0
+            return fib(a - 1) + fib(a - 2)
+        }
+        val output = execute(
+            """
+fun fib(a) {
+    if (a == 1) return 1;
+    if (a == 2) return 2;
+    return fib(a - 1) + fib(a - 2);
+}
+print fib(5);
+            """.trimIndent()
+        )
+        assertEquals("[LoxNumber] 8.0", "[LoxNumber] ${fib(5.0)}")
     }
 }
