@@ -10,20 +10,22 @@ class VM(
     val stack: Stack<LoxValue<Any>> = Stack(),
     private val globals: MutableMap<String, LoxValue<Any>> = mutableMapOf(),
 ) {
-
+    var ip: Int
+        get() = chunk.ip
+        set(ip) { chunk.ip = ip }
     fun exec() {
         while (true) {
-            if (chunk.ip >= chunk.codes.size) break
+            if (ip >= chunk.codes.size) break
 
             val opCode = chunk.peekOpCode()
 
             increment()
             when (opCode) {
                 OpReturn -> {
-                    chunk.ip = chunk.codes.size
+                    ip = chunk.codes.size
                 }
                 OpConstant -> {
-                    val cIdx = chunk.codes[chunk.ip].toInt()
+                    val cIdx = chunk.codes[ip].toInt()
                     push(chunk.constants[cIdx])
                     increment()
                 }
@@ -151,13 +153,18 @@ class VM(
                 OpJumpIfFalse -> {
                     val offset = chunk.readShort()
                     if (peek().isFalsely().value) {
-                        chunk.ip += offset.toInt()
+                        ip += offset.toInt()
                     }
                 }
 
                 OpJump -> {
                     val offset = chunk.readShort()
-                    chunk.ip += offset.toInt()
+                    ip += offset.toInt()
+                }
+
+                OpLoop -> {
+                    val offset = chunk.readShort()
+                    ip -= offset
                 }
             }
         }
@@ -169,7 +176,7 @@ class VM(
         return chunk.constants[index]
     }
 
-    fun getStringValue(): LoxString = when (val value = getValue()) {
+    private fun getStringValue(): LoxString = when (val value = getValue()) {
         is LoxString -> {
             increment()
             value
@@ -179,16 +186,16 @@ class VM(
 
     fun decompile() {
         while (true) {
-            if (chunk.ip >= chunk.codes.size) break
+            if (ip >= chunk.codes.size) break
 
-            val opCode = OpCode from chunk.codes[chunk.ip]
+            val opCode = OpCode from chunk.codes[ip]
 
             opCode?.decompile(this)
         }
     }
 
     fun reset() {
-        chunk.ip = 0
+        ip = 0
         stack.clear()
     }
 
@@ -200,12 +207,12 @@ class VM(
         return stack.pop()
     }
 
-    fun peek(): LoxValue<Any> {
+    private fun peek(): LoxValue<Any> {
         return stack.peek()
     }
 
     fun increment(step: Int = 1): Int {
-        chunk.ip += step
-        return chunk.ip
+        ip += step
+        return ip
     }
 }

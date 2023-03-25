@@ -1,6 +1,8 @@
 package dev.yidafu.kotlin.lox.vm
 
+import dev.yidafu.kotlin.lox.common.LoxMaxOffsetLimitException
 import dev.yidafu.kotlin.lox.common.unreachable
+import dev.yidafu.kotlin.lox.vm.OpCode.*
 
 class Chunk(
     /**
@@ -13,6 +15,11 @@ class Chunk(
 ) {
     fun write(byte: Byte, line: Int) {
         codes.add(byte)
+        lines.add(line)
+    }
+
+    fun write(opCode: OpCode, line: Int) {
+        codes.add(opCode.toByte())
         lines.add(line)
     }
 
@@ -38,11 +45,32 @@ class Chunk(
         codes.addAll(listOf(byte, (0xff).toByte(), (0xff).toByte()))
         return codes.size - 2
     }
+    fun writeJump(opCode: OpCode): Int {
+        return writeJump(opCode.toByte())
+    }
+
+    fun patchJump(offset: Int) {
+        val thenBlockLen = codes.size - offset - 2
+        if (thenBlockLen > Short.MAX_VALUE) {
+            throw LoxMaxOffsetLimitException()
+        }
+
+        codes[offset] = ((thenBlockLen shr 8) and 0xff).toByte()
+        codes[offset + 1] = ((thenBlockLen) and 0xff).toByte()
+    }
+
+    fun writeLoop(loopStart: Int) {
+        write(OpLoop, -1)
+
+        val offset = codes.size - loopStart + 2
+        write(((offset shr 8) and 0xff).toByte(), -1)
+        write((offset and 0xff).toByte(), -1)
+    }
 
     fun addConstant(value: LoxValue<Any>, line: Int) {
         this.constants.add(value)
         val top = this.constants.size - 1
-        write(OpCode.OpConstant.toByte(), line)
+        write(OpConstant, line)
         write(top.toByte(), line)
     }
 }

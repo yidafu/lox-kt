@@ -86,7 +86,27 @@ class Compiler(
     }
 
     override fun visitLogicalExpression(expression: Logical) {
-        TODO("Not yet implemented")
+        when (expression.operator.type) {
+            TokenType.AND -> {
+                compile(expression.left)
+                val endJump = chunk.writeJump(OpJumpIfFalse.toByte())
+                chunk.write(OpPop.toByte(), expression.operator.line)
+                compile(expression.right)
+                chunk.patchJump(endJump)
+            }
+            TokenType.OR -> {
+                compile(expression.left)
+                val elseJump = chunk.writeJump(OpJumpIfFalse.toByte())
+                val endJump = chunk.writeJump(OpJump.toByte())
+                chunk.patchJump(elseJump)
+                chunk.write(OpPop, -1)
+
+                compile(expression.right)
+
+                chunk.patchJump(endJump)
+            }
+            else -> unreachable()
+        }
     }
 
     override fun visitUnaryExpression(expression: Unary) {
@@ -156,26 +176,19 @@ class Compiler(
         compile(statement.condition)
 
         val thenJump = chunk.writeJump(OpJumpIfFalse.toByte())
+        chunk.write(OpPop.toByte(), -1) // pop condition
         compile(statement.thenBranch)
 
         val elseJump = chunk.writeJump(OpJump.toByte())
 
-        patchJump(thenJump)
+        chunk.patchJump(thenJump)
+
+        chunk.write(OpPop.toByte(), -1) // pop condition
 
         if (statement.elseBranch != null) {
             compile(statement.elseBranch)
         }
-        patchJump(elseJump)
-    }
-
-    private fun patchJump(offset: Int) {
-        val thenBlockLen = chunk.codes.size - offset - 2
-        if (thenBlockLen > Short.MAX_VALUE) {
-            throw LoxMaxOffsetLimitException()
-        }
-
-        chunk.codes[offset] = ((thenBlockLen shr 8) and 0xff).toByte()
-        chunk.codes[offset + 1] = ((thenBlockLen) and 0xff).toByte()
+        chunk.patchJump(elseJump)
     }
 
     override fun visitPrintStatement(statement: Print) {
@@ -215,7 +228,16 @@ class Compiler(
         locals.add(Local(name, scopeDepth))
     }
     override fun visitWhileStatement(statement: While) {
-        TODO("Not yet implemented")
+        val loopStart = chunk.codes.size
+        compile(statement.condition)
+
+        val exitJump = chunk.writeJump(OpJumpIfFalse)
+        chunk.write(OpPop, -1)
+
+        compile(statement.body)
+        chunk.writeLoop(loopStart)
+        chunk.patchJump(exitJump)
+        chunk.write(OpPop, -1)
     }
     private fun compile(expr: Expression) {
         expr.accept(this)

@@ -85,4 +85,29 @@ class CompilerTest {
         )
         assertEquals("[LoxString] then[LoxString] end if", output)
     }
+
+    @Test
+    fun whileStatementTest() {
+        val output = execute(
+            """
+            var a = 1;
+            while (a < 3) {
+                print a;
+                a = a + 1;
+            }
+            """.trimIndent()
+        )
+        assertEquals("[LoxNumber] 1.0[LoxNumber] 2.0", output)
+    }
+    @Test
+    fun forStatementTest() {
+        val output = execute(
+            """
+            for (var i = 1; i < 3; i = i + 1) {
+                print i;
+            }
+            """.trimIndent()
+        )
+        assertEquals("[LoxNumber] 1.0[LoxNumber] 2.0", output)
+    }
 }

@@ -110,6 +110,14 @@ enum class OpCode {
             println("\t offset $offset")
         }
     },
+
+    OpLoop {
+        override fun decompile(vm: VM) {
+            super.decompile(vm)
+            val offset = vm.chunk.readShort()
+            println("\t loop start at -$offset")
+        }
+    },
     ;
 
     /**
