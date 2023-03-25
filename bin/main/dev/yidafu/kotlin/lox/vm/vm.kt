@@ -147,6 +147,18 @@ class VM(
                     stack[index.toInt()] = peek()
                     increment()
                 }
+
+                OpJumpIfFalse -> {
+                    val offset = chunk.readShort()
+                    if (peek().isFalsely().value) {
+                        chunk.ip += offset.toInt()
+                    }
+                }
+
+                OpJump -> {
+                    val offset = chunk.readShort()
+                    chunk.ip += offset.toInt()
+                }
             }
         }
     }

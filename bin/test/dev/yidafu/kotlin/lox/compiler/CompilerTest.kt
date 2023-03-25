@@ -70,4 +70,19 @@ class CompilerTest {
         )
         assertEquals("[LoxString] outer-inner", output)
     }
+
+    @Test
+    fun ifStatementTest() {
+        val output = execute(
+            """
+           if (true) {
+                print "then";
+           } else {
+                print "else";
+           }
+           print "end if";
+            """.trimIndent()
+        )
+        assertEquals("[LoxString] then[LoxString] end if", output)
+    }
 }

@@ -95,6 +95,21 @@ enum class OpCode {
             println()
         }
     },
+
+    OpJumpIfFalse {
+        override fun decompile(vm: VM) {
+            super.decompile(vm)
+            val offset = vm.chunk.readShort()
+            println("\t offset $offset")
+        }
+    },
+    OpJump {
+        override fun decompile(vm: VM) {
+            super.decompile(vm)
+            val offset = vm.chunk.readShort()
+            println("\t offset $offset")
+        }
+    },
     ;
 
     /**

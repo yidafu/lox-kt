@@ -24,8 +24,19 @@ class Chunk(
         return codes[ip]
     }
 
+    fun readShort(): Short {
+        val offset = ((codes[ip].toInt() shr 8) or (codes[ip + 1].toInt())).toShort()
+        ip += 2
+        return offset
+    }
+
     fun write(bytes: List<Byte>, line: Int) {
         codes.addAll(bytes)
+    }
+
+    fun writeJump(byte: Byte): Int {
+        codes.addAll(listOf(byte, (0xff).toByte(), (0xff).toByte()))
+        return codes.size - 2
     }
 
     fun addConstant(value: LoxValue<Any>, line: Int) {

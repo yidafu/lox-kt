@@ -78,6 +78,9 @@ class Compiler(
             is String -> {
                 chunk.addConstant(LoxString(value.toString()), -1)
             }
+            is Boolean -> {
+                chunk.addConstant(LoxBool(value), -1)
+            }
             else -> unreachable()
         }
     }
@@ -150,7 +153,29 @@ class Compiler(
     }
 
     override fun visitIfStatement(statement: If) {
-        TODO("Not yet implemented")
+        compile(statement.condition)
+
+        val thenJump = chunk.writeJump(OpJumpIfFalse.toByte())
+        compile(statement.thenBranch)
+
+        val elseJump = chunk.writeJump(OpJump.toByte())
+
+        patchJump(thenJump)
+
+        if (statement.elseBranch != null) {
+            compile(statement.elseBranch)
+        }
+        patchJump(elseJump)
+    }
+
+    private fun patchJump(offset: Int) {
+        val thenBlockLen = chunk.codes.size - offset - 2
+        if (thenBlockLen > Short.MAX_VALUE) {
+            throw LoxMaxOffsetLimitException()
+        }
+
+        chunk.codes[offset] = ((thenBlockLen shr 8) and 0xff).toByte()
+        chunk.codes[offset + 1] = ((thenBlockLen) and 0xff).toByte()
     }
 
     override fun visitPrintStatement(statement: Print) {
