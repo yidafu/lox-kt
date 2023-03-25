@@ -6,7 +6,8 @@ class VMTest {
 
     @Test
     fun binaryPlusTest() {
-        val vm = VM(mainFun = FunctionObject(0, "main"))
+        val vm = VM()
+        vm.frames.push(CallFrame(FunctionObject(0, "main"), StackSlice(vm.stack, -1)))
 
         vm.frame.chunk.addConstant(LoxValue.LoxNumber(2.3), 1)
         vm.frame.chunk.addConstant(LoxValue.LoxNumber(3.4), 1)
